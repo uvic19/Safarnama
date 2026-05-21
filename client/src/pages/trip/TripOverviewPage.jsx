@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Receipt, Wallet, Clock, Users, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Plus, Receipt, Wallet, Clock, CalendarDays, Map } from 'lucide-react';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { expenseService } from '../../services/expenseService';
 import ExpenseRow from '../../components/expense/ExpenseRow';
 import NumpadSheet from '../../components/expense/NumpadSheet';
+import InviteCodeDisplay from '../../components/trip/InviteCodeDisplay';
 import { toast } from 'sonner';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
@@ -38,6 +39,7 @@ export default function TripOverviewPage() {
   const [numpadOpen, setNumpadOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [todayTime] = useState(() => Date.now());
 
   const handleEditExpense = (expense) => {
     setExpenseToEdit(expense);
@@ -96,7 +98,7 @@ export default function TripOverviewPage() {
   const pendingCount = expenses.filter((e) => e.status === 'PENDING').length;
 
   const daysLeft = trip?.end_date
-    ? Math.max(0, Math.ceil((new Date(trip.end_date) - Date.now()) / 86400000))
+    ? Math.max(0, Math.ceil((new Date(trip.end_date) - todayTime) / 86400000))
     : null;
 
   const isKaptan = trip?.kaptan_id === user?.uid;
@@ -169,6 +171,10 @@ export default function TripOverviewPage() {
           </div>
         )}
 
+        {isKaptan && trip.mode === 'GROUP_FULL' && (
+          <InviteCodeDisplay inviteCode={trip.invite_code} />
+        )}
+
         {/* Stats bento */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatBox
@@ -228,6 +234,13 @@ export default function TripOverviewPage() {
           >
             <Wallet className="w-5 h-5" />
             <span className="text-sm font-medium">Balances</span>
+          </Link>
+          <Link
+            to={`/trips/${id}/itinerary`}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.08] transition-all duration-150"
+          >
+            <Map className="w-5 h-5" />
+            <span className="text-sm font-medium">Itinerary</span>
           </Link>
         </div>
 

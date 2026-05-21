@@ -1,5 +1,5 @@
 import { db } from '../lib/firebase';
-import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { arrayUnion, collection, addDoc, doc, getDocs, limit, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 
 export const tripService = {
   async createTrip(tripData, userId) {
@@ -63,5 +63,43 @@ export const tripService = {
       console.error('Error creating trip:', error);
       throw error;
     }
+  },
+
+  async joinTripByInviteCode(inviteCode, user) {
+    const code = inviteCode.trim().toUpperCase();
+    if (!code) throw new Error('Invite code is required');
+
+    const tripsQuery = query(
+      collection(db, 'trips'),
+      where('invite_code', '==', code),
+      limit(1)
+    );
+    const snap = await getDocs(tripsQuery);
+
+    if (snap.empty) {
+      throw new Error('No trip found for this invite code');
+    }
+
+    const tripDoc = snap.docs[0];
+    const trip = { id: tripDoc.id, ...tripDoc.data() };
+
+    if (trip.member_ids?.includes(user.uid)) {
+      return tripDoc.id;
+    }
+
+    await updateDoc(doc(db, 'trips', tripDoc.id), {
+      member_ids: arrayUnion(user.uid),
+    });
+
+    await setDoc(doc(db, 'trips', tripDoc.id, 'members', user.uid), {
+      user_id: user.uid,
+      display_name: user.displayName || user.email || 'Member',
+      email: user.email || null,
+      role: 'MEMBER',
+      joined_at: serverTimestamp(),
+      is_active: true,
+    });
+
+    return tripDoc.id;
   }
 };

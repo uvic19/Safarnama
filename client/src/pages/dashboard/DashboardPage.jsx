@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { db } from '../../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { KeyRound, Plus } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -60,6 +60,15 @@ export default function DashboardPage() {
               <Plus className="w-5 h-5" />
             </div>
             <span className="font-medium text-sm">Create New Trip</span>
+          </Link>
+          <Link
+            to="/trips/join"
+            className="h-full min-h-[180px] rounded-3xl bg-white/[0.02] border border-dashed border-white/10 hover:border-white/30 transition-all duration-300 group flex flex-col items-center justify-center text-zinc-500 hover:text-white"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]">
+              <KeyRound className="w-5 h-5" />
+            </div>
+            <span className="font-medium text-sm">Join With Code</span>
           </Link>
         </div>
       )}
