@@ -1,0 +1,8 @@
+# Ignore all root files/directories by default
+/*
+
+# Whitelist allowed directories and files
+!/client/
+!/server/
+!/.gitignore
+!/README.md
