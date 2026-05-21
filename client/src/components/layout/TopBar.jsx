@@ -36,8 +36,8 @@ export default function TopBar() {
         </Button>
         
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar className="w-8 h-8 border border-white/10 shadow-sm cursor-pointer hover:ring-2 hover:ring-white/20 transition-all outline-none">
+          <DropdownMenuTrigger className="outline-none hover:ring-2 hover:ring-white/20 rounded-full transition-all">
+            <Avatar className="w-8 h-8 border border-white/10 shadow-sm cursor-pointer">
               <AvatarImage src={user?.photoURL} />
               <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs">{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>

@@ -64,3 +64,25 @@
     @apply antialiased selection:bg-white/10 selection:text-white;
   }
 }
+
+/* Themed scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-card);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) var(--color-card);
+}
+

@@ -4,6 +4,12 @@ import LandingPage from './pages/public/LandingPage';
 import DownloadPage from './pages/public/DownloadPage';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import CreateTripPage from './pages/trip/CreateTripPage';
+import TripOverviewPage from './pages/trip/TripOverviewPage';
+import ExpenseListPage from './pages/trip/ExpenseListPage';
+import PendingExpensesPage from './pages/trip/PendingExpensesPage';
+import BalancePage from './pages/trip/BalancePage';
+import SettlementPage from './pages/trip/SettlementPage';
 import AppShell from './components/layout/AppShell';
 
 // A simple AuthGuard wrapper
@@ -43,6 +49,12 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/trips/new" element={<CreateTripPage />} />
+          <Route path="/trips/:id" element={<TripOverviewPage />} />
+          <Route path="/trips/:id/expenses" element={<ExpenseListPage />} />
+          <Route path="/trips/:id/expenses/pending" element={<PendingExpensesPage />} />
+          <Route path="/trips/:id/balances" element={<BalancePage />} />
+          <Route path="/trips/:id/settlement" element={<SettlementPage />} />
           <Route path="/templates" element={<div className="p-8 text-white animate-fade-up">Explore Templates (Phase 7)</div>} />
           <Route path="/profile" element={<div className="p-8 text-white animate-fade-up">Profile (Phase 7)</div>} />
         </Route>
