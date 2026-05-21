@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { auth, googleProvider } from '../lib/firebase';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -16,6 +18,12 @@ export const useAuthStore = create((set) => ({
 
   // Initialize auth listener
   initAuthListener: () => {
+    // Handle redirect sign-in results (errors or successes)
+    getRedirectResult(auth)
+      .catch((error) => {
+        set({ error: error.message });
+      });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       set({ user, loading: false });
     });
@@ -25,7 +33,12 @@ export const useAuthStore = create((set) => ({
   loginWithGoogle: async () => {
     try {
       set({ loading: true, error: null });
-      await signInWithPopup(auth, googleProvider);
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        await signInWithPopup(auth, googleProvider);
+      }
     } catch (error) {
       set({ error: error.message, loading: false });
       throw error;
