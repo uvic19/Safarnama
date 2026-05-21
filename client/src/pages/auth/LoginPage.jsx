@@ -28,7 +28,7 @@ export default function LoginPage() {
       await loginWithGoogle();
       navigate('/dashboard');
     } catch (err) {
-      setError(getFriendlyError(err.code));
+      setError(getFriendlyError(err.code || err.message));
       setIsGoogleLoading(false);
     }
   };
@@ -45,12 +45,18 @@ export default function LoginPage() {
       }
       navigate('/dashboard');
     } catch (err) {
-      setError(getFriendlyError(err.code));
+      setError(getFriendlyError(err.code || err.message));
       setIsLoggingIn(false);
     }
   };
 
-  const getFriendlyError = (code) => {
+  const getFriendlyError = (codeOrMessage) => {
+    if (!codeOrMessage) return '';
+    
+    // Parse code from parentheses if it's a full Firebase error message string
+    const codeMatch = String(codeOrMessage).match(/\((auth\/[^)]+)\)/);
+    const code = codeMatch ? codeMatch[1] : codeOrMessage;
+
     const map = {
       'auth/invalid-email': 'Invalid email address.',
       'auth/user-disabled': 'This account has been disabled.',
@@ -61,8 +67,9 @@ export default function LoginPage() {
       'auth/weak-password': 'Password should be at least 6 characters.',
       'auth/popup-closed-by-user': 'Sign-in popup was closed.',
       'auth/configuration-not-found': 'Auth not configured. Enable it in Firebase Console.',
+      'auth/unauthorized-domain': 'This domain is not authorized in your Firebase Console. Add it to Authentication > Settings > Authorized domains.',
     };
-    return map[code] || 'Something went wrong. Please try again.';
+    return map[code] || String(codeOrMessage);
   };
 
   return (
