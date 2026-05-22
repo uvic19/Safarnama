@@ -5,6 +5,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc } 
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import LocationPicker from '../../components/itinerary/LocationPicker';
@@ -18,7 +19,9 @@ export default function SuggestionsPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('map');
   const [newLocation, setNewLocation] = useState({ place_name: '', lat: '', lng: '' });
+  const [manualText, setManualText] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -46,21 +49,26 @@ export default function SuggestionsPage() {
   const isKaptan = trip?.kaptan_id === user?.uid;
 
   const handleAddSuggestion = async () => {
-    if (!newLocation.place_name?.trim()) {
-      toast.error('Please select a location');
+    const isManual = activeTab === 'manual';
+    const finalPlaceName = isManual ? manualText : newLocation.place_name;
+
+    if (!finalPlaceName?.trim()) {
+      toast.error('Please enter or select a suggestion');
       return;
     }
+    
     setSubmitting(true);
     try {
       await addDoc(collection(db, 'trips', id, 'suggestions'), {
-        place_name: newLocation.place_name,
-        lat: newLocation.lat || null,
-        lng: newLocation.lng || null,
+        place_name: finalPlaceName,
+        lat: isManual ? null : (newLocation.lat || null),
+        lng: isManual ? null : (newLocation.lng || null),
         created_by: user.uid,
         created_by_name: user.displayName || 'Traveler',
         created_at: serverTimestamp()
       });
       setNewLocation({ place_name: '', lat: '', lng: '' });
+      setManualText('');
       setIsAddOpen(false);
       toast.success('Suggestion added!');
     } catch (err) {
@@ -145,14 +153,41 @@ export default function SuggestionsPage() {
             <DialogTitle>Suggest a Location</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <LocationPicker
-              value={newLocation}
-              onChange={setNewLocation}
-            />
+            <div className="flex bg-white/[0.05] p-1 rounded-lg mb-4">
+              <button 
+                onClick={() => setActiveTab('map')} 
+                className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === 'map' ? 'bg-white/10 text-white shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+              >
+                Search on Map
+              </button>
+              <button 
+                onClick={() => setActiveTab('manual')} 
+                className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === 'manual' ? 'bg-white/10 text-white shadow-sm' : 'text-muted-foreground hover:text-white'}`}
+              >
+                Enter Link/Text
+              </button>
+            </div>
+            
+            {activeTab === 'map' ? (
+              <LocationPicker
+                value={newLocation}
+                onChange={setNewLocation}
+              />
+            ) : (
+              <div className="space-y-2 pt-2">
+                <label className="text-sm font-medium text-foreground">Suggestion details</label>
+                <Input 
+                  value={manualText} 
+                  onChange={e => setManualText(e.target.value)} 
+                  placeholder="Paste a link or type a place name..." 
+                  className="w-full"
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddSuggestion} disabled={submitting || !newLocation.place_name?.trim()}>
+            <Button onClick={handleAddSuggestion} disabled={submitting || (activeTab === 'map' ? !newLocation.place_name?.trim() : !manualText.trim())}>
               {submitting ? 'Adding...' : 'Add Suggestion'}
             </Button>
           </DialogFooter>
