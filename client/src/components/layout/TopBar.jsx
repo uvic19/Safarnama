@@ -102,6 +102,30 @@ export default function TopBar() {
               <LogOut className="w-4 h-4 text-red-400/70" />
               <span>Log out</span>
             </DropdownMenuItem>
+            
+            {('Notification' in window) && Notification.permission !== 'granted' && (
+              <>
+                <DropdownMenuSeparator className="bg-white/5 my-1" />
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    try {
+                      const permission = await Notification.requestPermission();
+                      if (permission === 'granted') {
+                        alert("Notifications enabled! Please refresh the app to register your device.");
+                      } else {
+                        alert("Permission denied. You may need to enable it in your browser settings.");
+                      }
+                    } catch(e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer outline-none transition-colors"
+                >
+                  <Bell className="w-4 h-4 text-emerald-400/70" />
+                  <span>Enable Push Notifications</span>
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

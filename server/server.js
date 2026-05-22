@@ -35,6 +35,7 @@ async function getTokensForUsers(userIds) {
 
 // 1. Notify Expense Added
 app.post('/api/notify/expense-added', async (req, res) => {
+  console.log(`\n--- Received POST /api/notify/expense-added ---`);
   try {
     const { tripId, expenseId, addedById, amount, currency, description, addedByName } = req.body;
     
@@ -91,10 +92,17 @@ app.post('/api/notify/expense-added', async (req, res) => {
     }
 
     if (targetIds.length > 0) {
+      console.log(`Looking up tokens for ${targetIds.length} users...`);
       const tokens = await getTokensForUsers(targetIds);
+      console.log(`Found ${tokens.length} tokens. Sending notifications...`);
       if (tokens.length > 0) {
-        await messaging.sendEachForMulticast({ tokens, ...payload });
+        const response = await messaging.sendEachForMulticast({ tokens, ...payload });
+        console.log(`Successfully sent ${response.successCount} messages. Failed: ${response.failureCount}`);
+      } else {
+        console.log('No tokens found for these users.');
       }
+    } else {
+      console.log('No target users to notify.');
     }
 
     res.json({ success: true });
