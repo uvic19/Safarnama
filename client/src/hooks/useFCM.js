@@ -10,8 +10,7 @@ export function useFCM(user) {
 
     const setupFCM = async () => {
       try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
+        if (Notification.permission === 'granted') {
           const messaging = getMessaging();
           const currentToken = await getToken(messaging, { 
             vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
