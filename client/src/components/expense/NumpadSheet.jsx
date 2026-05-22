@@ -148,8 +148,16 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
       onAdded?.();
       handleClose();
     } catch (e) {
-      toast.error(expenseToEdit ? 'Failed to update expense' : 'Failed to add expense');
-      console.error(e);
+      if (e?.code === 'already-exists') {
+        // This happens on poor networks where Firebase retries a successful addDoc.
+        // The document actually exists, so we treat it as success!
+        toast.success('Expense added successfully!');
+        onAdded?.();
+        handleClose();
+      } else {
+        toast.error(expenseToEdit ? 'Failed to update expense' : 'Failed to add expense');
+        console.error(e);
+      }
     } finally {
       setSubmitting(false);
     }
