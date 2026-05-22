@@ -30,9 +30,9 @@
     <!-- Value from default config. -->
     <string name="generatorApp" translatable="false">bubblewrap-cli</string>
     <!-- Value from default config. -->
-    <string name="hostName" translatable="false">safarnama.kridleapps.tech</string>
+    <string name="hostName" translatable="false">safarnama.kridleapps.dev</string>
     <!-- Value from default config. -->
-    <string name="launchUrl" translatable="false">https://safarnama.kridleapps.tech/dashboard</string>
+    <string name="launchUrl" translatable="false">https://safarnama.kridleapps.dev/dashboard</string>
     <!-- Value from default config. -->
     <string name="launcherName" translatable="false">Safarnama</string>
     <!-- Value from default config. -->

@@ -22,7 +22,7 @@ plugins {
 
 def twaManifest = [
     applicationId: 'tech.kridleapps.safarnama',
-    hostName: 'safarnama.kridleapps.tech', // The domain being opened in the TWA.
+    hostName: 'safarnama.kridleapps.dev', // The domain being opened in the TWA.
     launchUrl: '/dashboard', // The start path for the TWA. Must be relative to the domain.
     name: 'Safarnama', // The application name.
     launcherName: 'Safarnama', // The name shown on the Android Launcher.
