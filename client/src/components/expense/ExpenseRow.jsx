@@ -26,9 +26,11 @@ function timeAgo(ts) {
  * @param {string} kaptanId - UID of the trip kaptan
  * @param {Function} onEdit - Callback to edit this expense
  */
-export default function ExpenseRow({ expense, showStatus = false, currentUserId, kaptanId, onEdit, onDelete }) {
+export default function ExpenseRow({ expense, showStatus = false, currentUserId, kaptanId, baseCurrency = 'INR', onEdit, onDelete }) {
   const {
     amount,
+    currency,
+    amount_in_base,
     category = 'Misc',
     description,
     paid_by_name,
@@ -41,6 +43,9 @@ export default function ExpenseRow({ expense, showStatus = false, currentUserId,
   const isKaptan = currentUserId === kaptanId;
   const canEdit = isKaptan || (isCreator && expense.status !== 'APPROVED');
   const metaItems = [paid_by_name, payment_mode, timeAgo(created_at)].filter(Boolean);
+  
+  const displayAmount = amount_in_base || amount;
+  const isDifferentCurrency = currency && currency !== baseCurrency;
 
   return (
     <div className="rounded-xl bg-white/[0.03] p-3 sm:p-4 ring-1 ring-white/[0.06] transition-colors duration-200 hover:bg-white/[0.05]">
@@ -70,9 +75,14 @@ export default function ExpenseRow({ expense, showStatus = false, currentUserId,
 
         {/* Right — amount + actions */}
         <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-4">
-          <span className="font-mono text-sm font-semibold tracking-tight text-foreground sm:text-base">
-              ₹{Number(amount).toLocaleString('en-IN')}
-          </span>
+          <div className="text-right">
+            <span className="font-mono text-sm font-semibold tracking-tight text-foreground sm:text-base">
+                {baseCurrency} {Number(displayAmount).toLocaleString('en-IN')}
+            </span>
+            {isDifferentCurrency && (
+               <p className="text-[10px] text-muted-foreground">{currency} {Number(amount).toLocaleString('en-IN')}</p>
+            )}
+          </div>
 
           {canEdit && (
             <div className="flex items-center -mr-1.5">

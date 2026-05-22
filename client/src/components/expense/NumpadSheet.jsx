@@ -3,6 +3,7 @@ import { X, Delete, ChevronLeft, Trash2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
 import CategoryIcon, { CATEGORIES } from './CategoryIcon';
 import SplitSelector from './SplitSelector';
@@ -34,13 +35,14 @@ const initialForm = {
   split_among: [],
   payment_mode: 'Cash',
   description: '',
+  currency: '',
   created_at: null,
 };
 
 /**
  * Multi-step bottom sheet for adding/editing expenses.
  */
-export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId, onAdded, expenseToEdit }) {
+export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId, baseCurrency = 'INR', onAdded, expenseToEdit }) {
   const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(initialForm);
@@ -63,6 +65,7 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
             split_among: expenseToEdit.split_among || [],
             payment_mode: expenseToEdit.payment_mode || 'Cash',
             description: expenseToEdit.description || '',
+            currency: expenseToEdit.currency || baseCurrency,
             created_at: expenseToEdit.created_at ? (expenseToEdit.created_at.toDate ? expenseToEdit.created_at.toDate() : new Date(expenseToEdit.created_at)) : new Date(),
           });
         } else {
@@ -75,6 +78,7 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
             split_among: m.map((mem) => mem.id),
             payment_mode: 'Cash',
             description: '',
+            currency: baseCurrency,
           });
         }
       });
@@ -109,12 +113,33 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
       return;
     }
     setSubmitting(true);
+    
     try {
+      let rate = 1;
+      let finalForm = { ...form };
+      
+      if (form.currency && form.currency !== baseCurrency) {
+        try {
+          const res = await fetch(`https://open.er-api.com/v6/latest/${form.currency}`);
+          const data = await res.json();
+          if (data && data.rates && data.rates[baseCurrency]) {
+            rate = data.rates[baseCurrency];
+          } else {
+            throw new Error("Rate not found");
+          }
+        } catch (err) {
+          toast.error("Failed to fetch exchange rate. Using 1:1");
+        }
+      }
+      
+      finalForm.exchange_rate = rate;
+      finalForm.amount_in_base = Number(form.amount) * rate;
+
       if (expenseToEdit) {
-        await expenseService.updateExpense(tripId, expenseToEdit.id, form);
+        await expenseService.updateExpense(tripId, expenseToEdit.id, finalForm, baseCurrency);
         toast.success('Expense updated!');
       } else {
-        await expenseService.addExpense(tripId, form, user.uid, tripMode, kaptanId);
+        await expenseService.addExpense(tripId, finalForm, user.uid, tripMode, kaptanId, baseCurrency);
         const isKaptan = user.uid === kaptanId;
         toast.success(
           tripMode === 'SOLO' || isKaptan ? 'Expense added!' : 'Expense submitted for approval'
@@ -201,10 +226,22 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
           {step === 0 && (
             <div className="flex flex-col items-center py-4">
               {/* Amount display */}
-              <div className="mb-8 text-center">
-                <p className="text-sm text-muted-foreground mb-2">Enter amount</p>
+              <div className="mb-6 text-center w-full max-w-xs">
+                <div className="flex justify-between items-center mb-2 px-2">
+                  <p className="text-sm text-muted-foreground">Enter amount</p>
+                  <Select value={form.currency || baseCurrency} onValueChange={(val) => setForm((p) => ({ ...p, currency: val }))}>
+                    <SelectTrigger className="w-[100px] h-8 bg-transparent border-white/10 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from(new Set([baseCurrency, 'INR', 'USD', 'EUR', 'GBP', 'AED', 'SGD', 'AUD', 'CAD'])).map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="font-mono text-2xl text-muted-foreground">₹</span>
+                  <span className="font-mono text-xl text-muted-foreground">{form.currency || baseCurrency}</span>
                   <span className="font-mono text-6xl font-light text-foreground tracking-tighter min-w-[2ch]">
                     {form.amount || '0'}
                   </span>
@@ -366,7 +403,12 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Summary</p>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Amount</span>
-                  <span className="font-mono font-semibold text-foreground">₹{Number(form.amount).toLocaleString('en-IN')}</span>
+                  <div className="text-right">
+                    <span className="font-mono font-semibold text-foreground">{form.currency || baseCurrency} {Number(form.amount).toLocaleString('en-IN')}</span>
+                    {form.currency && form.currency !== baseCurrency && (
+                       <p className="text-xs text-muted-foreground">≈ {baseCurrency} (fetching...)</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Category</span>

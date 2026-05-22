@@ -12,17 +12,22 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+
 export const expenseService = {
   /**
    * Add a new expense to a trip.
    * Auto-approved when: trip is SOLO, OR the user adding is the Kaptan.
    * All other cases go to PENDING for Kaptan approval.
    */
-  async addExpense(tripId, expenseData, userId, tripMode, kaptanId) {
+  async addExpense(tripId, expenseData, userId, tripMode, kaptanId, baseCurrency = 'INR') {
     const isAutoApproved = tripMode === 'SOLO' || userId === kaptanId;
 
     const payload = {
       amount: Number(expenseData.amount),
+      currency: expenseData.currency || baseCurrency,
+      amount_in_base: Number(expenseData.amount_in_base || expenseData.amount),
+      exchange_rate: Number(expenseData.exchange_rate || 1),
       category: expenseData.category || 'Misc',
       description: expenseData.description || '',
       paid_by_id: expenseData.paid_by_id || userId,
@@ -36,13 +41,32 @@ export const expenseService = {
 
     const expensesRef = collection(db, 'trips', tripId, 'expenses');
     const docRef = await addDoc(expensesRef, payload);
+    
+    // Trigger Push Notification
+    fetch(`${SERVER_URL}/api/notify/expense-added`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tripId,
+        expenseId: docRef.id,
+        addedById: userId,
+        addedByName: expenseData.paid_by_name || 'A member',
+        amount: payload.amount,
+        currency: payload.currency,
+        description: payload.description
+      })
+    }).catch(console.error);
+
     return docRef.id;
   },
 
   /** Update an existing expense in a trip. */
-  async updateExpense(tripId, expenseId, expenseData) {
+  async updateExpense(tripId, expenseId, expenseData, baseCurrency = 'INR') {
     const payload = {
       amount: Number(expenseData.amount),
+      currency: expenseData.currency || baseCurrency,
+      amount_in_base: Number(expenseData.amount_in_base || expenseData.amount),
+      exchange_rate: Number(expenseData.exchange_rate || 1),
       category: expenseData.category || 'Misc',
       description: expenseData.description || '',
       paid_by_id: expenseData.paid_by_id,
@@ -84,9 +108,19 @@ export const expenseService = {
   },
 
   /** Approve a pending expense. */
-  async approveExpense(tripId, expenseId) {
+  async approveExpense(tripId, expenseId, approverName = 'Kaptaan') {
     const ref = doc(db, 'trips', tripId, 'expenses', expenseId);
     await updateDoc(ref, { status: 'APPROVED' });
+    
+    fetch(`${SERVER_URL}/api/notify/expense-approved`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tripId,
+        expenseId,
+        approverName
+      })
+    }).catch(console.error);
   },
 
   /** Reject a pending expense with a reason. */

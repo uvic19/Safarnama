@@ -20,9 +20,14 @@ import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
 import TemplatesPage from './pages/TemplatesPage';
 
+import { useFCM } from './hooks/useFCM';
+
 // A simple AuthGuard wrapper
 function AuthGuard({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
+  
+  // Setup FCM notifications for authenticated users
+  useFCM(user);
   
   if (loading) {
     return (

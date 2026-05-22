@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "tech.kridleapps.safarnama",
+    "sha256_cert_fingerprints": [
+      "FA:C6:17:45:D9:ED:66:29:78:1C:14:1A:0F:70:E4:05:40:97:5B:48:ED:9A:8B:1B:5F:AC:61:74:5D:9E:D6:62"
+    ]
+  }
+}]

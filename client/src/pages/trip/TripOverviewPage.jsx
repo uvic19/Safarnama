@@ -96,7 +96,7 @@ export default function TripOverviewPage() {
 
   const totalSpent = expenses
     .filter((e) => e.status === 'APPROVED')
-    .reduce((sum, e) => sum + Number(e.amount), 0);
+    .reduce((sum, e) => sum + Number(e.amount_in_base || e.amount || 0), 0);
 
   const pendingCount = expenses.filter((e) => e.status === 'PENDING').length;
 
@@ -191,7 +191,7 @@ export default function TripOverviewPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatBox
             label="Total Spent"
-            value={`₹${totalSpent.toLocaleString('en-IN')}`}
+            value={`${trip?.base_currency || 'INR'} ${totalSpent.toLocaleString('en-IN')}`}
             sub="approved"
           />
           <StatBox
@@ -284,6 +284,7 @@ export default function TripOverviewPage() {
                   showStatus={trip.mode !== 'SOLO'} 
                   currentUserId={user?.uid}
                   kaptanId={trip?.kaptan_id}
+                  baseCurrency={trip?.base_currency || 'INR'}
                   onEdit={handleEditExpense}
                   onDelete={handleDeleteExpense}
                 />
@@ -311,6 +312,7 @@ export default function TripOverviewPage() {
         tripId={id}
         tripMode={trip?.mode}
         kaptanId={trip?.kaptan_id}
+        baseCurrency={trip?.base_currency || 'INR'}
         onAdded={() => {}}
       />
 

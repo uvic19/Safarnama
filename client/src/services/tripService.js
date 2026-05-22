@@ -125,6 +125,17 @@ export const tripService = {
       is_active: true,
     });
 
+    const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+    fetch(`${SERVER_URL}/api/notify/member-joined`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tripId: tripDoc.id,
+        newMemberId: user.uid,
+        newMemberName: user.displayName || user.email || 'A new member'
+      })
+    }).catch(console.error);
+
     return tripDoc.id;
   }
 };

@@ -24,7 +24,7 @@ export function computeBalances(members = [], expenses = [], settlements = []) {
   expenses.forEach(expense => {
     if (expense.status !== 'APPROVED') return;
 
-    const amount = Number(expense.amount);
+    const amount = Number(expense.amount_in_base || expense.amount);
     totalGroupSpent += amount;
 
     // Credit the person who paid

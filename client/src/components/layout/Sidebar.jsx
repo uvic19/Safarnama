@@ -17,9 +17,11 @@ export default function Sidebar() {
   return (
     <div className="h-full flex flex-col py-6 px-4">
       <div className="flex items-center gap-3 px-2 mb-10">
-        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center font-display font-bold text-black text-lg">
-          S
-        </div>
+        <img 
+          src="/icons/BlackOnWhite.svg" 
+          alt="Safarnama Logo" 
+          className="w-8 h-8 rounded-full" 
+        />
         <span className="font-display text-xl font-bold tracking-tight text-white">Safarnama</span>
       </div>
 

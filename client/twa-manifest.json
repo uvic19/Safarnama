@@ -1,0 +1,49 @@
+{
+  "packageId": "tech.kridleapps.safarnama",
+  "host": "safarnama.kridleapps.tech",
+  "name": "Safarnama",
+  "launcherName": "Safarnama",
+  "display": "standalone",
+  "themeColor": "#09090B",
+  "themeColorDark": "#000000",
+  "navigationColor": "#09090B",
+  "navigationColorDark": "#09090B",
+  "navigationDividerColor": "#18181B",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#09090B",
+  "enableNotifications": true,
+  "startUrl": "/dashboard",
+  "iconUrl": "http://localhost:5173/icons/icon-512.png",
+  "maskableIconUrl": "http://localhost:5173/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./safarnama-keystore.jks",
+    "alias": "safarnama"
+  },
+  "appVersionName": "version1",
+  "appVersionCode": 2,
+  "shortcuts": [
+    {
+      "name": "Add Expense",
+      "shortName": "Expense",
+      "url": "/trips/new-expense",
+      "chosenIconUrl": "http://localhost:5173/icons/icon-96.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 24,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "displayOverride": [],
+  "appVersion": "version1"
+}

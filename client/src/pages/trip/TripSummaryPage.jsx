@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, MapPin, CalendarDays, Wallet } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, MapPin, CalendarDays, Wallet, Download } from 'lucide-react';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Button } from '../../components/ui/button';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export default function TripSummaryPage() {
   const { id } = useParams();
@@ -12,6 +14,60 @@ export default function TripSummaryPage() {
   const [trip, setTrip] = useState(null);
   const [stats, setStats] = useState({ totalExpense: 0, topCategory: '-', expenseCount: 0 });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const exportPDF = async () => {
+    if (!trip) return;
+    setExporting(true);
+    try {
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.width;
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(22);
+      pdf.text(trip.name, pageWidth / 2, 20, { align: 'center' });
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(12);
+      pdf.text(`Destinations: ${Array.isArray(trip.destinations) ? trip.destinations.join(', ') : (trip.destinations || 'N/A')}`, 14, 35);
+      pdf.text(`Dates: ${trip.start_date || '?'} to ${trip.end_date || '?'}`, 14, 43);
+      
+      const baseCurr = trip.base_currency || 'INR';
+      pdf.text(`Total Spent: ${baseCurr} ${stats.totalExpense.toLocaleString()}`, 14, 51);
+      pdf.text(`Total Expenses: ${stats.expenseCount}`, 14, 59);
+
+      const expQ = query(collection(db, 'trips', id, 'expenses'), where('status', '==', 'APPROVED'));
+      const expSnap = await getDocs(expQ);
+      
+      const expensesList = expSnap.docs.map(d => d.data()).sort((a, b) => {
+        const da = a.created_at?.toDate ? a.created_at.toDate().getTime() : 0;
+        const dbX = b.created_at?.toDate ? b.created_at.toDate().getTime() : 0;
+        return da - dbX;
+      });
+
+      const tableData = expensesList.map(exp => {
+        const date = exp.created_at?.toDate ? exp.created_at.toDate().toLocaleDateString() : 'Unknown';
+        const amtStr = exp.currency && exp.currency !== baseCurr
+          ? `${exp.currency} ${exp.amount} (${baseCurr} ${exp.amount_in_base || exp.amount})` 
+          : `${baseCurr} ${exp.amount_in_base || exp.amount}`;
+        return [date, exp.category, exp.description || '-', exp.paid_by_name || 'Someone', amtStr];
+      });
+
+      pdf.autoTable({
+        startY: 70,
+        head: [['Date', 'Category', 'Description', 'Paid By', 'Amount']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [24, 24, 27] }, // zinc-900
+      });
+
+      pdf.save(`safarnama_${trip.name.replace(/\s+/g, '_').toLowerCase()}_summary.pdf`);
+    } catch (err) {
+      console.error('PDF generation failed', err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -29,7 +85,7 @@ export default function TripSummaryPage() {
         const categoryTotals = {};
         expSnap.docs.forEach(doc => {
           const data = doc.data();
-          const amount = Number(data.amount) || 0;
+          const amount = Number(data.amount_in_base || data.amount) || 0;
           total += amount;
           categoryTotals[data.category] = (categoryTotals[data.category] || 0) + amount;
         });
@@ -59,8 +115,19 @@ export default function TripSummaryPage() {
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-white/[0.06] text-muted-foreground md:hidden">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-display text-2xl font-bold text-foreground">Trip Summary</h1>
+        <div className="flex-1">
+          <h1 className="font-display text-2xl font-bold text-foreground">Trip Summary</h1>
+        </div>
+        <Button variant="outline" size="sm" onClick={exportPDF} disabled={exporting} className="hidden sm:flex">
+          <Download className="w-4 h-4 mr-2" />
+          {exporting ? 'Generating...' : 'Download PDF'}
+        </Button>
       </div>
+
+      <Button variant="outline" className="w-full mb-6 sm:hidden" onClick={exportPDF} disabled={exporting}>
+        <Download className="w-4 h-4 mr-2" />
+        {exporting ? 'Generating...' : 'Download PDF'}
+      </Button>
 
       <div className="p-[2px] rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] mb-8 relative overflow-hidden group">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-50" />
@@ -95,7 +162,7 @@ export default function TripSummaryPage() {
         <div className="bg-white/[0.03] p-4 rounded-xl ring-1 ring-white/[0.06] flex flex-col items-center justify-center text-center">
           <Wallet className="w-6 h-6 text-emerald-400 mb-2" />
           <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Spent</div>
-          <div className="text-xl font-mono text-foreground font-bold">₹{stats.totalExpense.toLocaleString()}</div>
+          <div className="text-xl font-mono text-foreground font-bold">{trip.base_currency || 'INR'} {stats.totalExpense.toLocaleString()}</div>
         </div>
         <div className="bg-white/[0.03] p-4 rounded-xl ring-1 ring-white/[0.06] flex flex-col items-center justify-center text-center">
           <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Expenses</div>

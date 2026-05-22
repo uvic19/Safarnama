@@ -102,7 +102,7 @@ export default function ExpenseListPage() {
     return acc;
   }, {});
 
-  const totalFiltered = filtered.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const totalFiltered = filtered.reduce((sum, e) => sum + Number(e.amount_in_base || e.amount || 0), 0);
 
   return (
     <>
@@ -127,7 +127,7 @@ export default function ExpenseListPage() {
           <div>
             <p className="text-xs text-muted-foreground">Total ({filter})</p>
             <p className="font-mono text-xl font-semibold text-foreground">
-              ₹{totalFiltered.toLocaleString('en-IN')}
+              {trip?.base_currency || 'INR'} {totalFiltered.toLocaleString('en-IN')}
             </p>
           </div>
           <p className="text-sm text-muted-foreground">{filtered.length} expense{filtered.length !== 1 ? 's' : ''}</p>
@@ -190,7 +190,7 @@ export default function ExpenseListPage() {
                   <p className="text-xs font-medium text-muted-foreground">{date}</p>
                   <div className="flex-1 h-px bg-white/[0.06]" />
                   <p className="text-xs font-mono text-muted-foreground">
-                    ₹{dayExpenses.reduce((s, e) => s + Number(e.amount || 0), 0).toLocaleString('en-IN')}
+                    {trip?.base_currency || 'INR'} {dayExpenses.reduce((s, e) => s + Number(e.amount_in_base || e.amount || 0), 0).toLocaleString('en-IN')}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -201,6 +201,7 @@ export default function ExpenseListPage() {
                       showStatus={trip?.mode !== 'SOLO'} 
                       currentUserId={user?.uid}
                       kaptanId={trip?.kaptan_id}
+                      baseCurrency={trip?.base_currency || 'INR'}
                       onEdit={handleEditExpense}
                       onDelete={handleDeleteExpense}
                     />
@@ -230,6 +231,7 @@ export default function ExpenseListPage() {
         tripId={id}
         tripMode={trip?.mode}
         kaptanId={trip?.kaptan_id}
+        baseCurrency={trip?.base_currency || 'INR'}
         onAdded={() => {}}
       />
 
