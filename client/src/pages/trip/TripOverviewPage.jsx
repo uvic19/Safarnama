@@ -273,7 +273,7 @@ export default function TripOverviewPage() {
             className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.08] transition-all duration-150"
           >
             <Download className="w-5 h-5" />
-            <span className="text-sm font-medium">Export</span>
+            <span className="text-sm font-medium">Export PDF</span>
           </Link>
         </div>
 
