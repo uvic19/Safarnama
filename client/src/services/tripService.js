@@ -92,6 +92,19 @@ export const tripService = {
     }
   },
 
+  async deleteTrip(tripId) {
+    try {
+      // In a production app with backend, you'd trigger a cloud function to cascade delete subcollections.
+      // Here, deleting the parent doc is enough to remove it from all UI queries.
+      const docRef = doc(db, 'trips', tripId);
+      const { deleteDoc } = await import('firebase/firestore');
+      await deleteDoc(docRef);
+    } catch (error) {
+      console.error('Error deleting trip:', error);
+      throw error;
+    }
+  },
+
   async joinTripByInviteCode(inviteCode, user) {
     const code = inviteCode.trim().toUpperCase();
     if (!code) throw new Error('Invite code is required');

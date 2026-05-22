@@ -4,12 +4,16 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { User, Users, ShieldCheck } from 'lucide-react';
+import { User, Users, ShieldCheck, Trash2 } from 'lucide-react';
 import { tripService } from '../../services/tripService';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import ConfirmDialog from '../ui/ConfirmDialog';
 
 export default function EditTripSheet({ open, onClose, trip }) {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     destinations: '',
@@ -53,6 +57,20 @@ export default function EditTripSheet({ open, onClose, trip }) {
     } catch (error) {
       toast.error('Failed to update trip');
     } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTrip = async () => {
+    if (!trip?.id) return;
+    setIsSubmitting(true);
+    try {
+      await tripService.deleteTrip(trip.id);
+      toast.success('Trip deleted successfully');
+      onClose();
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      toast.error('Failed to delete trip');
       setIsSubmitting(false);
     }
   };
@@ -170,16 +188,39 @@ export default function EditTripSheet({ open, onClose, trip }) {
             </RadioGroup>
           </div>
 
-          <div className="pt-6 flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => onClose()} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleSave} disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+          <div className="pt-6 flex flex-col gap-3">
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => onClose()} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button className="flex-1" onClick={handleSave} disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+            
+            <div className="pt-4 mt-2 border-t border-white/[0.06]">
+              <Button 
+                variant="ghost" 
+                className="w-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10" 
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isSubmitting}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Trip
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete Trip"
+        description="Are you absolutely sure you want to delete this trip? This action cannot be undone and will remove it for all members."
+        confirmText="Yes, delete trip"
+        onConfirm={handleDeleteTrip}
+      />
     </Sheet>
   );
 }

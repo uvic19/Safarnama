@@ -30,10 +30,10 @@ export default function DownloadPage() {
                     Install the full experience on your phone. Works offline, loads instantly, and runs smoothly as a Progressive Web App via Trusted Web Activities.
                   </p>
                   
-                  <a href="/downloads/safarnama-v1.0.apk" download>
+                  <a href="/downloads/safarnama.apk" download>
                     <Button size="lg" className="w-full md:w-auto h-14 px-8 rounded-full bg-white text-black hover:bg-zinc-200 font-body text-base font-semibold group flex items-center justify-center gap-2">
                       <Download className="w-5 h-5" />
-                      Download APK v1.0 — 8.2 MB
+                      Download APK — 1.36 MB
                     </Button>
                   </a>
                 </div>
