@@ -22,42 +22,34 @@ export default function ReloadPrompt() {
     },
   });
 
-  // ROBUST RELOAD MECHANISM
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      let refreshing = false;
-      const handleControllerChange = () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      };
-      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-      return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-    }
-  }, []);
-
-  const handleReload = () => {
-    // Try to use the plugin's built-in skip waiting
+  // HARD RESET MECHANISM (User Requested)
+  // This physically deletes the old PWA caches and unregisters the service worker,
+  // guaranteeing that the page will load fresh assets from the network.
+  const handleReload = async () => {
     try {
-      updateServiceWorker(false);
-    } catch (e) {
-      console.error(e);
-    }
-
-    // Explicitly send SKIP_WAITING to the waiting service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then((reg) => {
-        if (reg && reg.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      // 1. Unregister all service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          await reg.unregister();
         }
-      });
-    }
+      }
 
-    // Ultimate fallback: just reload after 1 second
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+      // 2. Delete all Cache Storage (this holds the old HTML/JS/CSS)
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const name of cacheNames) {
+          await caches.delete(name);
+        }
+      }
+
+      // 3. Force reload from server
+      window.location.reload(true);
+    } catch (err) {
+      console.error('Hard reset failed:', err);
+      // Fallback reload
+      window.location.reload(true);
+    }
   };
 
   const close = () => {
