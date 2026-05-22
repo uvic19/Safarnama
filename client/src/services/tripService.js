@@ -161,5 +161,63 @@ export const tripService = {
     }
 
     return tripDoc.id;
+  },
+
+  async removeMember(tripId, memberId, userIdToRemove) {
+    try {
+      const { deleteDoc, arrayRemove } = await import('firebase/firestore');
+      const memberRef = doc(db, 'trips', tripId, 'members', memberId);
+      await deleteDoc(memberRef);
+
+      if (userIdToRemove) {
+        const tripRef = doc(db, 'trips', tripId);
+        await updateDoc(tripRef, {
+          member_ids: arrayRemove(userIdToRemove)
+        });
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+      throw error;
+    }
+  },
+
+  async leaveTrip(tripId, userId) {
+    try {
+      // User is always leaving as themselves
+      return this.removeMember(tripId, userId, userId);
+    } catch (error) {
+      console.error('Error leaving trip:', error);
+      throw error;
+    }
+  },
+
+  async updateOfflineMemberName(tripId, memberId, newName) {
+    try {
+      if (!newName.trim()) throw new Error('Name cannot be empty');
+      const memberRef = doc(db, 'trips', tripId, 'members', memberId);
+      await updateDoc(memberRef, {
+        offline_name: newName.trim()
+      });
+    } catch (error) {
+      console.error('Error updating member name:', error);
+      throw error;
+    }
+  },
+
+  async addOfflineMember(tripId, name) {
+    try {
+      if (!name.trim()) throw new Error('Name cannot be empty');
+      const membersRef = collection(db, 'trips', tripId, 'members');
+      await addDoc(membersRef, {
+        user_id: null,
+        offline_name: name.trim(),
+        role: 'MEMBER',
+        joined_at: serverTimestamp(),
+        is_active: true
+      });
+    } catch (error) {
+      console.error('Error adding offline member:', error);
+      throw error;
+    }
   }
 };

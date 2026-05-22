@@ -9,13 +9,17 @@ import ExpenseRow from '../../components/expense/ExpenseRow';
 import NumpadSheet from '../../components/expense/NumpadSheet';
 import InviteCodeDisplay from '../../components/trip/InviteCodeDisplay';
 import EditTripSheet from '../../components/trip/EditTripSheet';
+import MembersSheet from '../../components/trip/MembersSheet';
 import { toast } from 'sonner';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
-function StatBox({ label, value, sub, color = 'text-foreground' }) {
+function StatBox({ label, value, sub, color = 'text-foreground', onClick, isClickable }) {
   return (
-    <div className="p-[1.5px] rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06]">
-      <div className="rounded-[calc(1rem-1.5px)] bg-[#18181B] p-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]">
+    <div 
+      className={`p-[1.5px] rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] ${isClickable ? 'cursor-pointer hover:bg-white/[0.08] active:scale-95 transition-all' : ''}`}
+      onClick={onClick}
+    >
+      <div className="rounded-[calc(1rem-1.5px)] bg-[#18181B] p-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] h-full">
         <p className="text-xs text-muted-foreground mb-1">{label}</p>
         <p className={`font-mono text-xl font-semibold leading-none ${color}`}>{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
@@ -41,6 +45,7 @@ export default function TripOverviewPage() {
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
+  const [membersSheetOpen, setMembersSheetOpen] = useState(false);
   const [todayTime] = useState(() => Date.now());
 
   const handleEditExpense = (expense) => {
@@ -198,6 +203,8 @@ export default function TripOverviewPage() {
             label="Members"
             value={members.length}
             sub={`${isKaptan ? 'You are Kaptan' : 'Member'}`}
+            onClick={() => setMembersSheetOpen(true)}
+            isClickable={true}
           />
           <StatBox
             label="Pending"
@@ -332,6 +339,15 @@ export default function TripOverviewPage() {
           if (updated === true) fetchTrip();
         }} 
         trip={trip} 
+      />
+
+      <MembersSheet
+        open={membersSheetOpen}
+        onClose={() => setMembersSheetOpen(false)}
+        trip={trip}
+        members={members}
+        currentUser={user}
+        onMembersUpdated={fetchTrip}
       />
     </>
   );
