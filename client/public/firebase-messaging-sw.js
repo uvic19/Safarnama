@@ -15,9 +15,28 @@ const messaging = firebase.messaging();
 // Handle background messages
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  // Customizing notification if webpush block was sent
-  // Firebase usually auto-shows notifications if the payload contains 'notification' block.
-  // But if it contains webpush actions, we rely on the backend payload to format it.
+  
+  const notificationTitle = payload.notification?.title || payload.data?.title || 'New Notification';
+  const notificationOptions = {
+    body: payload.notification?.body || payload.data?.body,
+    icon: '/icons/icon-192.png',
+    data: payload.data,
+  };
+
+  if (payload.fcmOptions?.link) {
+    notificationOptions.data = { ...notificationOptions.data, link: payload.fcmOptions.link };
+  }
+
+  // If there are actions in the webpush block, unfortunately the Firebase compat SDK
+  // doesn't always expose webpush actions inside the payload object here.
+  if (payload.data?.actions) {
+    try {
+      notificationOptions.actions = JSON.parse(payload.data.actions);
+    } catch(e) {}
+  }
+
+  // Let's explicitly show it:
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Intercept notification clicks for our Actions (Approve/Decline)

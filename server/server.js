@@ -77,11 +77,17 @@ app.post('/api/notify/expense-added', async (req, res) => {
           type: 'EXPENSE_APPROVAL',
           tripId,
           expenseId,
-          // We pass this so the SW can hit our action endpoint securely-ish
-          kaptanId: trip.kaptan_id
+          kaptanId: trip.kaptan_id,
+          // Stringify actions because FCM data only accepts strings
+          actions: JSON.stringify([
+            { action: 'approve', title: 'Approve' },
+            { action: 'decline', title: 'Decline' }
+          ])
         },
         webpush: {
           notification: {
+            title: `Approval Needed: ${trip.name}`,
+            body: `${addedByName} logged ${currency} ${amount} for ${description}`,
             actions: [
               { action: 'approve', title: 'Approve' },
               { action: 'decline', title: 'Decline' }
@@ -98,6 +104,13 @@ app.post('/api/notify/expense-added', async (req, res) => {
       if (tokens.length > 0) {
         const response = await messaging.sendEachForMulticast({ tokens, ...payload });
         console.log(`Successfully sent ${response.successCount} messages. Failed: ${response.failureCount}`);
+        if (response.failureCount > 0) {
+          response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+              console.error(`Token ${idx} failed:`, resp.error);
+            }
+          });
+        }
       } else {
         console.log('No tokens found for these users.');
       }
