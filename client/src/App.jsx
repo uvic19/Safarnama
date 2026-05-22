@@ -15,6 +15,7 @@ import ItineraryPage from './pages/trip/ItineraryPage';
 import AppShell from './components/layout/AppShell';
 import PlansPage from './pages/trip/PlansPage';
 import SuggestionsPage from './pages/trip/SuggestionsPage';
+import ExportPage from './pages/trip/ExportPage';
 import TripSummaryPage from './pages/trip/TripSummaryPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
@@ -73,6 +74,7 @@ function App() {
           <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
           <Route path="/trips/:id/plans" element={<PlansPage />} />
           <Route path="/trips/:id/suggestions" element={<SuggestionsPage />} />
+          <Route path="/trips/:id/export" element={<ExportPage />} />
           <Route path="/trips/:id/summary" element={<TripSummaryPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/templates" element={<TemplatesPage />} />
