@@ -8,10 +8,10 @@ const STATUS_CONFIG = {
  * Small status pill badge for expense approval state.
  * @param {'PENDING'|'APPROVED'|'REJECTED'} status
  */
-export default function ApprovalBadge({ status = 'PENDING' }) {
+export default function ApprovalBadge({ status = 'PENDING', className = '' }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ring-1 ${cfg.classes}`}>
+    <span className={`inline-flex items-center px-1.5 py-0.5 sm:px-2 rounded-md text-[10px] sm:text-xs font-medium ring-1 ${cfg.classes} ${className}`}>
       {cfg.label}
     </span>
   );

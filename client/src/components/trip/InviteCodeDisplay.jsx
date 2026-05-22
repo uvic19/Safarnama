@@ -7,9 +7,18 @@ export default function InviteCodeDisplay({ inviteCode }) {
   if (!inviteCode) return null;
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(inviteCode);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        throw new Error('Clipboard not supported');
+      }
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      toast.error('Could not copy to clipboard. Please copy manually.');
+    }
   };
 
   return (

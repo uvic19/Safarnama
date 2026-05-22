@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Receipt, Wallet, Clock, CalendarDays, Map } from 'lucide-react';
+import { ArrowLeft, Plus, Receipt, Wallet, Clock, CalendarDays, Map, Edit3 } from 'lucide-react';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
@@ -8,6 +8,7 @@ import { expenseService } from '../../services/expenseService';
 import ExpenseRow from '../../components/expense/ExpenseRow';
 import NumpadSheet from '../../components/expense/NumpadSheet';
 import InviteCodeDisplay from '../../components/trip/InviteCodeDisplay';
+import EditTripSheet from '../../components/trip/EditTripSheet';
 import { toast } from 'sonner';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
@@ -39,6 +40,7 @@ export default function TripOverviewPage() {
   const [numpadOpen, setNumpadOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [todayTime] = useState(() => Date.now());
 
   const handleEditExpense = (expense) => {
@@ -64,21 +66,22 @@ export default function TripOverviewPage() {
   };
 
   // Fetch trip + members
-  useEffect(() => {
+  const fetchTrip = async () => {
     if (!id) return;
-    const fetchTrip = async () => {
-      try {
-        const tripDoc = await getDoc(doc(db, 'trips', id));
-        if (tripDoc.exists()) setTrip({ id: tripDoc.id, ...tripDoc.data() });
+    try {
+      const tripDoc = await getDoc(doc(db, 'trips', id));
+      if (tripDoc.exists()) setTrip({ id: tripDoc.id, ...tripDoc.data() });
 
-        const memberSnap = await getDocs(collection(db, 'trips', id, 'members'));
-        setMembers(memberSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      } catch (e) {
-        console.error('Failed to load trip', e);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const memberSnap = await getDocs(collection(db, 'trips', id, 'members'));
+      setMembers(memberSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      console.error('Failed to load trip', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchTrip();
   }, [id]);
 
@@ -158,6 +161,15 @@ export default function TripOverviewPage() {
             <span className={`px-3 py-1 rounded-md text-xs font-medium ring-1 flex-shrink-0 ${statusColors[trip.status] || statusColors.PLANNING}`}>
               {trip.status}
             </span>
+          )}
+          {isKaptan && (
+            <button
+              onClick={() => setEditSheetOpen(true)}
+              className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+              title="Edit Trip"
+            >
+              <Edit3 className="w-5 h-5" />
+            </button>
           )}
         </div>
 
@@ -309,6 +321,15 @@ export default function TripOverviewPage() {
         description="Are you sure you want to delete this expense? This action cannot be undone."
         confirmText="Delete"
         onConfirm={handleConfirmDelete}
+      />
+
+      <EditTripSheet 
+        open={editSheetOpen} 
+        onClose={(updated) => {
+          setEditSheetOpen(false);
+          if (updated === true) fetchTrip();
+        }} 
+        trip={trip} 
       />
     </>
   );

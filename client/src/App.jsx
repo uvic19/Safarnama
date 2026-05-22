@@ -13,6 +13,12 @@ import BalancePage from './pages/trip/BalancePage';
 import SettlementPage from './pages/trip/SettlementPage';
 import ItineraryPage from './pages/trip/ItineraryPage';
 import AppShell from './components/layout/AppShell';
+import PlansPage from './pages/trip/PlansPage';
+import SuggestionsPage from './pages/trip/SuggestionsPage';
+import TripSummaryPage from './pages/trip/TripSummaryPage';
+import NotificationsPage from './pages/NotificationsPage';
+import ProfilePage from './pages/ProfilePage';
+import TemplatesPage from './pages/TemplatesPage';
 
 // A simple AuthGuard wrapper
 function AuthGuard({ children }) {
@@ -59,8 +65,12 @@ function App() {
           <Route path="/trips/:id/balances" element={<BalancePage />} />
           <Route path="/trips/:id/settlement" element={<SettlementPage />} />
           <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
-          <Route path="/templates" element={<div className="p-8 text-white animate-fade-up">Explore Templates (Phase 7)</div>} />
-          <Route path="/profile" element={<div className="p-8 text-white animate-fade-up">Profile (Phase 7)</div>} />
+          <Route path="/trips/:id/plans" element={<PlansPage />} />
+          <Route path="/trips/:id/suggestions" element={<SuggestionsPage />} />
+          <Route path="/trips/:id/summary" element={<TripSummaryPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/templates" element={<TemplatesPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
         
         {/* Fallback */}

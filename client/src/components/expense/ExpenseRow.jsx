@@ -43,70 +43,69 @@ export default function ExpenseRow({ expense, showStatus = false, currentUserId,
   const metaItems = [paid_by_name, payment_mode, timeAgo(created_at)].filter(Boolean);
 
   return (
-    <div className="rounded-xl bg-white/[0.03] p-4 ring-1 ring-white/[0.06] transition-colors duration-200 hover:bg-white/[0.05]">
-      <div className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-start gap-3">
-      {/* Category icon */}
-      <CategoryIcon category={category} size={40} />
-
-      {/* Middle — description + meta */}
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium leading-5 text-foreground">
-          {description || category}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
-          {metaItems.map((item, index) => (
-            <span key={`${item}-${index}`} className="inline-flex min-w-0 items-center gap-1.5">
-              {index > 0 && <span className="text-white/20">·</span>}
-              <span className={index === 1 ? 'capitalize' : ''}>{item}</span>
-            </span>
-          ))}
+    <div className="rounded-xl bg-white/[0.03] p-3 sm:p-4 ring-1 ring-white/[0.06] transition-colors duration-200 hover:bg-white/[0.05]">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Left — Category icon */}
+        <div className="shrink-0">
+          <CategoryIcon category={category} size={40} />
         </div>
-      </div>
 
-      {/* Right — amount + badge + edit button */}
-      <div className="flex flex-col items-end gap-2">
-        <span className="font-mono text-sm font-semibold tracking-tight text-foreground sm:text-base">
-            ₹{Number(amount).toLocaleString('en-IN')}
-        </span>
-
-        {canEdit && (
-          <div className="flex items-center gap-1">
-            {onEdit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(expense);
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
-                aria-label="Edit expense"
-                title="Edit Expense"
-              >
-                <Edit3 className="h-4 w-4" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(expense);
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-400"
-                aria-label="Delete expense"
-                title="Delete Expense"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
+        {/* Middle — description + meta + badge */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="truncate text-sm font-medium leading-tight text-foreground">
+              {description || category}
+            </p>
+            {showStatus && <ApprovalBadge status={status} className="shrink-0" />}
           </div>
-        )}
-      </div>
-      </div>
-
-      {showStatus && (
-        <div className="mt-3 pl-[52px] sm:mt-0 sm:flex sm:justify-end sm:pl-0">
-          <ApprovalBadge status={status} />
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+            {metaItems.map((item, index) => (
+              <span key={`${item}-${index}`} className="inline-flex min-w-0 items-center gap-1.5">
+                {index > 0 && <span className="text-white/20">·</span>}
+                <span className={index === 1 ? 'capitalize' : ''}>{item}</span>
+              </span>
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Right — amount + actions */}
+        <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+          <span className="font-mono text-sm font-semibold tracking-tight text-foreground sm:text-base">
+              ₹{Number(amount).toLocaleString('en-IN')}
+          </span>
+
+          {canEdit && (
+            <div className="flex items-center -mr-1.5">
+              {onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(expense);
+                  }}
+                  className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
+                  aria-label="Edit expense"
+                  title="Edit Expense"
+                >
+                  <Edit3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(expense);
+                  }}
+                  className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                  aria-label="Delete expense"
+                  title="Delete Expense"
+                >
+                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

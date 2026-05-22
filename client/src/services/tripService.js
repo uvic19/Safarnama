@@ -65,6 +65,30 @@ export const tripService = {
     }
   },
 
+  async updateTrip(tripId, updates, currentTripData = null) {
+    try {
+      const docRef = doc(db, 'trips', tripId);
+      const payload = { ...updates, updated_at: serverTimestamp() };
+      
+      if (payload.destinations && typeof payload.destinations === 'string') {
+        payload.destinations = payload.destinations.split(',').map(d => d.trim()).filter(Boolean);
+      }
+      if (payload.total_budget !== undefined) {
+        payload.total_budget = payload.total_budget ? Number(payload.total_budget) : null;
+      }
+      
+      // If switching to GROUP_FULL and no invite code exists, generate one
+      if (payload.mode === 'GROUP_FULL' && (!currentTripData || !currentTripData.invite_code)) {
+        payload.invite_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      }
+      
+      await updateDoc(docRef, payload);
+    } catch (error) {
+      console.error('Error updating trip:', error);
+      throw error;
+    }
+  },
+
   async joinTripByInviteCode(inviteCode, user) {
     const code = inviteCode.trim().toUpperCase();
     if (!code) throw new Error('Invite code is required');
@@ -72,6 +96,7 @@ export const tripService = {
     const tripsQuery = query(
       collection(db, 'trips'),
       where('invite_code', '==', code),
+      where('mode', '==', 'GROUP_FULL'),
       limit(1)
     );
     const snap = await getDocs(tripsQuery);
