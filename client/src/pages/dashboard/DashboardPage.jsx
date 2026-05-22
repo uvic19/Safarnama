@@ -1,5 +1,7 @@
 import TripCard from '../../components/trip/TripCard';
 import { useEffect, useState } from 'react';
+import { TEMPLATES } from '../../lib/templates';
+import { tripService } from '../../services/tripService';
 import { useAuth } from '../../hooks/useAuth';
 import { db } from '../../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -24,14 +26,45 @@ export default function DashboardPage() {
     if (!user) return;
     const fetchTrips = async () => {
       try {
-        // member_ids is a flat array field on each trip doc containing all member uids.
-        // This allows a single queryable field check without needing subcollection exists().
         const q = query(
           collection(db, 'trips'),
           where('member_ids', 'array-contains', user.uid)
         );
         const snap = await getDocs(q);
-        setTrips(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const loadedTrips = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        
+        // Auto-seed default trip if they have no trips and haven't been seeded yet
+        const profile = await userService.getUserProfile(user.uid);
+        if (loadedTrips.length === 0 && !profile?.has_seeded_default_trip) {
+          try {
+            const goaTemplate = TEMPLATES[0]; // Goa Weekend Getaway
+            const today = new Date();
+            const endDate = new Date(today);
+            endDate.setDate(endDate.getDate() + (goaTemplate.duration_days - 1));
+
+            const tripId = await tripService.createTrip({
+              name: goaTemplate.name,
+              destinations: goaTemplate.destinations,
+              start_date: today.toISOString().split('T')[0],
+              end_date: endDate.toISOString().split('T')[0],
+              mode: 'SOLO',
+              base_currency: 'INR',
+              total_budget: goaTemplate.estimated_budget,
+              template_itinerary: goaTemplate.itinerary
+            }, user.uid);
+            
+            await userService.updateUserProfile(user.uid, { has_seeded_default_trip: true });
+            
+            // Refetch after seeding
+            const newSnap = await getDocs(q);
+            setTrips(newSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+          } catch (seedErr) {
+            console.error('Failed to auto-seed default trip', seedErr);
+            setTrips(loadedTrips);
+          }
+        } else {
+          setTrips(loadedTrips);
+        }
       } catch (e) {
         console.error('Failed to load trips', e);
       } finally {
