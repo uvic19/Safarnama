@@ -53,7 +53,15 @@ export default function ReloadPrompt() {
         {needRefresh && (
           <Button
             size="sm"
-            onClick={() => updateServiceWorker(true)}
+            onClick={async () => {
+              if (updateServiceWorker) {
+                await updateServiceWorker(true);
+                // Fallback timeout to ensure reload happens if the service worker takes too long or fails to trigger it
+                setTimeout(() => window.location.reload(), 1000);
+              } else {
+                window.location.reload();
+              }
+            }}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-1"
           >
             <RefreshCw className="w-4 h-4 mr-2" />

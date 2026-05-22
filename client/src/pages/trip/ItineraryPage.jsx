@@ -154,7 +154,17 @@ export default function ItineraryPage() {
     if (location.state?.prefillSuggestion && trip && !dialogOpen && !loading) {
       // Small timeout to allow render to settle
       setTimeout(() => {
-        openAddStop(null, { place_name: location.state.prefillSuggestion, notes: 'From suggestion' });
+        const sugg = location.state.prefillSuggestion;
+        const placeName = typeof sugg === 'string' ? sugg : sugg.place_name;
+        const lat = typeof sugg === 'string' ? '' : (sugg.lat || '');
+        const lng = typeof sugg === 'string' ? '' : (sugg.lng || '');
+        
+        openAddStop(null, { 
+          place_name: placeName, 
+          lat, 
+          lng, 
+          notes: 'From suggestion' 
+        });
         // Clear the state so it doesn't reopen if they close it
         navigate(location.pathname, { replace: true, state: {} });
       }, 100);
