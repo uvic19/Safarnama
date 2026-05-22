@@ -16,6 +16,10 @@
         "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
+        "merged": "tech.kridleapps.safarnama.app-release-25:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-xxhdpi_shortcut_0.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-xxhdpi\\shortcut_0.png"
     },
@@ -24,24 +28,16 @@
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-xxhdpi\\ic_notification_icon.png"
     },
     {
-        "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-hdpi_splash.png.flat",
-        "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-hdpi\\splash.png"
-    },
-    {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-mdpi_ic_notification_icon.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-mdpi\\ic_notification_icon.png"
     },
     {
-        "merged": "tech.kridleapps.safarnama.app-release-25:/mipmap-hdpi_ic_maskable.png.flat",
-        "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-hdpi/ic_maskable.png"
+        "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-hdpi_splash.png.flat",
+        "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-hdpi\\splash.png"
     },
     {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-mdpi_ic_launcher.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-mdpi\\ic_launcher.png"
-    },
-    {
-        "merged": "tech.kridleapps.safarnama.app-release-25:/mipmap-anydpi-v26_ic_maskable.png.flat",
-        "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-anydpi-v26/ic_maskable.png"
     },
     {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-hdpi_ic_maskable.png.flat",
@@ -64,10 +60,6 @@
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-xxxhdpi\\ic_notification_icon.png"
     },
     {
-        "merged": "tech.kridleapps.safarnama.app-release-25:/mipmap-xhdpi_ic_maskable.png.flat",
-        "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-xhdpi/ic_maskable.png"
-    },
-    {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-xxhdpi_ic_maskable.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-xxhdpi\\ic_maskable.png"
     },
@@ -88,10 +80,6 @@
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-hdpi\\shortcut_0.png"
     },
     {
-        "merged": "tech.kridleapps.safarnama.app-release-25:/mipmap-xxxhdpi_ic_maskable.png.flat",
-        "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-xxxhdpi/ic_maskable.png"
-    },
-    {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-xxxhdpi_splash.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-xxxhdpi\\splash.png"
     },
@@ -102,10 +90,6 @@
     {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-xxxhdpi_ic_launcher.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-xxxhdpi\\ic_launcher.png"
-    },
-    {
-        "merged": "tech.kridleapps.safarnama.app-release-25:/mipmap-xxhdpi_ic_maskable.png.flat",
-        "source": "tech.kridleapps.safarnama.app-main-26:/mipmap-xxhdpi/ic_maskable.png"
     },
     {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-xhdpi_ic_launcher.png.flat",
@@ -132,16 +116,20 @@
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-mdpi\\shortcut_0.png"
     },
     {
+        "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-anydpi-v26_ic_maskable.png.flat",
+        "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-anydpi-v26\\ic_maskable.png"
+    },
+    {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-xhdpi_splash.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\drawable-xhdpi\\splash.png"
     },
     {
-        "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-anydpi-v26\\ic_launcher.xml"
-    },
-    {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-xhdpi_ic_maskable.png.flat",
         "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-xhdpi\\ic_maskable.png"
+    },
+    {
+        "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-main-26:\\mipmap-anydpi-v26\\ic_launcher.xml"
     },
     {
         "merged": "C:\\Users\\krish\\.gradle\\daemon\\8.11.1\\tech.kridleapps.safarnama.app-release-25:\\drawable-xxhdpi_splash.png.flat",
