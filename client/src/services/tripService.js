@@ -61,6 +61,30 @@ export const tripService = {
         }
       }
 
+      // Add template itinerary if provided
+      if (tripData.template_itinerary && Array.isArray(tripData.template_itinerary)) {
+        const itineraryRef = collection(db, 'trips', docRef.id, 'itinerary');
+        let startDate = tripData.start_date ? new Date(tripData.start_date) : new Date();
+        
+        for (let i = 0; i < tripData.template_itinerary.length; i++) {
+          const item = tripData.template_itinerary[i];
+          const itemDate = new Date(startDate);
+          itemDate.setDate(itemDate.getDate() + (item.day_offset || 0));
+          
+          await addDoc(itineraryRef, {
+            place_name: item.place_name || '',
+            stop_type: item.stop_type || 'TOURIST',
+            lat: item.lat || null,
+            lng: item.lng || null,
+            notes: item.notes || null,
+            date: itemDate,
+            order_index: i,
+            created_at: serverTimestamp(),
+            updated_at: serverTimestamp()
+          });
+        }
+      }
+
       return docRef.id;
     } catch (error) {
       console.error('Error creating trip:', error);

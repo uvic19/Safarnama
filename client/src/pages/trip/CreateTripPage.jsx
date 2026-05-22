@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { tripService } from '../../services/tripService';
 import { Button } from '../../components/ui/button';
@@ -12,21 +12,24 @@ import Step4Review from '../../components/trip/create/Step4Review';
 
 export default function CreateTripPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const template = location.state?.template;
   const navigate = useNavigate();
-  
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    destinations: '',
+    name: template?.name || '',
+    destinations: template?.destinations?.join(', ') || '',
     start_date: null,
     end_date: null,
     mode: 'SOLO',
     base_currency: 'INR',
-    total_budget: '',
+    total_budget: template?.estimated_budget ? String(template.estimated_budget) : '',
     budget_limits: {},
-    offline_members: [''] // Array of empty strings for inputs
+    offline_members: [''], // Array of empty strings for inputs
+    template_itinerary: template?.itinerary || null
   });
 
   const updateData = (fields) => {
