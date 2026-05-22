@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ArrowLeft, Camera, Compass, Dumbbell, Lock, MapPinned, Plus, UtensilsCrossed, Unlock, Hotel } from 'lucide-react';
 import { toast } from 'sonner';
@@ -80,6 +80,7 @@ function groupStops(stops) {
 export default function ItineraryPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   const [trip, setTrip] = useState(null);
@@ -138,15 +139,27 @@ export default function ItineraryPage() {
     [stops],
   );
 
-  const openAddStop = (date) => {
+  const openAddStop = (date, overrideForm = {}) => {
     setEditingStopId(null);
     setForm({
       ...EMPTY_FORM,
       date: date ? toInputDate(date) : toInputDate(trip?.start_date),
       order_index: stops.length,
+      ...overrideForm
     });
     setDialogOpen(true);
   };
+
+  useEffect(() => {
+    if (location.state?.prefillSuggestion && trip && !dialogOpen && !loading) {
+      // Small timeout to allow render to settle
+      setTimeout(() => {
+        openAddStop(null, { place_name: location.state.prefillSuggestion, notes: 'From suggestion' });
+        // Clear the state so it doesn't reopen if they close it
+        navigate(location.pathname, { replace: true, state: {} });
+      }, 100);
+    }
+  }, [location.state?.prefillSuggestion, trip, dialogOpen, loading, navigate, location.pathname]);
 
   const openEditStop = (stop) => {
     setEditingStopId(stop.id);

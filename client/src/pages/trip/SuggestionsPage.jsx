@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, ExternalLink, Plus } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/button';
@@ -13,6 +13,7 @@ export default function SuggestionsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  const [trip, setTrip] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newSuggestion, setNewSuggestion] = useState('');
@@ -20,13 +21,27 @@ export default function SuggestionsPage() {
 
   useEffect(() => {
     if (!id) return;
+    
+    // Fetch trip to check Kaptan status
+    const unsubTrip = onSnapshot(doc(db, 'trips', id), (docSnap) => {
+      if (docSnap.exists()) {
+        setTrip({ id: docSnap.id, ...docSnap.data() });
+      }
+    });
+
     const q = query(collection(db, 'trips', id, 'suggestions'), orderBy('created_at', 'desc'));
-    const unsub = onSnapshot(q, (snap) => {
+    const unsubSugg = onSnapshot(q, (snap) => {
       setSuggestions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
-    return unsub;
+    
+    return () => {
+      unsubTrip();
+      unsubSugg();
+    };
   }, [id]);
+
+  const isKaptan = trip?.kaptan_id === user?.uid;
 
   const handleAddSuggestion = async (e) => {
     e.preventDefault();
@@ -74,15 +89,29 @@ export default function SuggestionsPage() {
         ) : (
           suggestions.map(s => (
             <div key={s.id} className="bg-white/[0.03] p-4 rounded-xl ring-1 ring-white/[0.06]">
-              <div className="text-xs text-muted-foreground mb-1 font-medium">{s.created_by_name}</div>
-              {isUrl(s.text) ? (
-                <a href={s.text} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-2 hover:underline break-all">
-                  <ExternalLink className="w-4 h-4 shrink-0" />
-                  {s.text}
-                </a>
-              ) : (
-                <p className="text-sm text-foreground whitespace-pre-wrap">{s.text}</p>
-              )}
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1 font-medium">{s.created_by_name}</div>
+                  {isUrl(s.text) ? (
+                    <a href={s.text} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-2 hover:underline break-all">
+                      <ExternalLink className="w-4 h-4 shrink-0" />
+                      {s.text}
+                    </a>
+                  ) : (
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{s.text}</p>
+                  )}
+                </div>
+                {isKaptan && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="ml-2 text-xs shrink-0" 
+                    onClick={() => navigate(`/trips/${id}/itinerary`, { state: { prefillSuggestion: s.text } })}
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> Add to Itinerary
+                  </Button>
+                )}
+              </div>
             </div>
           ))
         )}
