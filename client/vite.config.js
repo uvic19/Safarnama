@@ -12,7 +12,7 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['icons/WhiteOnBlackNoBg.svg', 'icons/*.png'],
       manifest: {
         name: 'Safarnama — Trip Management',

@@ -21,6 +21,7 @@ import ProfilePage from './pages/ProfilePage';
 import TemplatesPage from './pages/TemplatesPage';
 
 import { useFCM } from './hooks/useFCM';
+import ReloadPrompt from './components/ui/ReloadPrompt';
 
 // A simple AuthGuard wrapper
 function AuthGuard({ children }) {
@@ -81,6 +82,7 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ReloadPrompt />
     </BrowserRouter>
   );
 }
