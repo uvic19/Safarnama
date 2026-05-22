@@ -1,5 +1,6 @@
 import { db } from '../lib/firebase';
 import { arrayUnion, collection, addDoc, doc, getDocs, limit, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import { userService } from './userService';
 
 export const tripService = {
   async createTrip(tripData, userId) {
@@ -34,12 +35,14 @@ export const tripService = {
       const docRef = await addDoc(tripsRef, payload);
 
       // Add creator as KAPTAN in members subcollection
+      const userProfile = await userService.getUserProfile(userId);
       const memberRef = doc(db, 'trips', docRef.id, 'members', userId);
       await setDoc(memberRef, {
         user_id: userId,
         role: 'KAPTAN',
         joined_at: serverTimestamp(),
-        is_active: true
+        is_active: true,
+        upi_id: userProfile?.upi_id || null
       });
 
       // Add offline members if mode is KAPTAN_ONLY
@@ -116,6 +119,7 @@ export const tripService = {
       member_ids: arrayUnion(user.uid),
     });
 
+    const userProfile = await userService.getUserProfile(user.uid);
     await setDoc(doc(db, 'trips', tripDoc.id, 'members', user.uid), {
       user_id: user.uid,
       display_name: user.displayName || user.email || 'Member',
@@ -123,6 +127,7 @@ export const tripService = {
       role: 'MEMBER',
       joined_at: serverTimestamp(),
       is_active: true,
+      upi_id: userProfile?.upi_id || null
     });
 
     try {

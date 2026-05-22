@@ -63,29 +63,27 @@ export default function SettlementRow({
         </span>
         
         {/* Actions */}
-        {isPending && (
-          <div className="flex gap-2">
-            {(isReceiver || isKaptan) && (
-              <Button
-                size="sm"
-                className="h-8 bg-emerald-500 text-black hover:bg-emerald-600 rounded-md font-medium px-3"
-                onClick={() => onConfirm(id)}
-              >
-                Confirm
-              </Button>
-            )}
-            {(isSender || isKaptan) && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-md"
-                onClick={() => onDelete(id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        )}
+        <div className="flex gap-2">
+          {isPending && (isReceiver || isKaptan) && (
+            <Button
+              size="sm"
+              className="h-8 bg-emerald-500 text-black hover:bg-emerald-600 rounded-md font-medium px-3"
+              onClick={() => onConfirm(id)}
+            >
+              Confirm
+            </Button>
+          )}
+          {(isSender || isKaptan) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-md"
+              onClick={() => onDelete(id)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
