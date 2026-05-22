@@ -77,7 +77,7 @@ export default function EditTripSheet({ open, onClose, trip }) {
 
   return (
     <Sheet open={open} onOpenChange={(val) => { if (!val) onClose(); }}>
-      <SheetContent side="bottom" className="h-[85vh] sm:h-auto sm:max-w-md sm:right-0 sm:bottom-auto sm:top-0 sm:border-l sm:rounded-l-2xl sm:border-t-0 rounded-t-2xl bg-background px-6 pt-6 pb-8 overflow-y-auto">
+      <SheetContent side="bottom" className="max-h-[90vh] sm:h-auto sm:max-w-md sm:right-0 sm:bottom-auto sm:top-0 sm:border-l sm:rounded-l-2xl sm:border-t-0 rounded-t-2xl bg-background px-6 pt-6 pb-8 overflow-y-auto">
         <SheetHeader className="mb-6 text-left">
           <SheetTitle>Edit Trip</SheetTitle>
           <SheetDescription>
