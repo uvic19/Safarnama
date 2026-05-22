@@ -5,7 +5,7 @@ import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { db } from '../../lib/firebase';
 import { Button } from '../../components/ui/button';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export default function ExportPage() {
   const { id } = useParams();
@@ -128,7 +128,7 @@ export default function ExportPage() {
         return [exp.dateStr, exp.category || 'Other', exp.description || '-', exp.paid_by_name || 'Someone', amtStr];
       });
 
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: 65,
         head: [['Date', 'Category', 'Description', 'Paid By', 'Amount']],
         body: tableData,

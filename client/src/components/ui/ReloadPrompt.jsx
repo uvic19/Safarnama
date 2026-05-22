@@ -22,6 +22,44 @@ export default function ReloadPrompt() {
     },
   });
 
+  // ROBUST RELOAD MECHANISM
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      let refreshing = false;
+      const handleControllerChange = () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+      return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    }
+  }, []);
+
+  const handleReload = () => {
+    // Try to use the plugin's built-in skip waiting
+    try {
+      updateServiceWorker(false);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // Explicitly send SKIP_WAITING to the waiting service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg && reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    }
+
+    // Ultimate fallback: just reload after 1 second
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
+
   const close = () => {
     setOfflineReady(false);
     setNeedRefresh(false);
@@ -53,7 +91,7 @@ export default function ReloadPrompt() {
         {needRefresh && (
           <Button
             size="sm"
-            onClick={() => updateServiceWorker(true)}
+            onClick={handleReload}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-1"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
