@@ -7,38 +7,38 @@ const PUBLIC_DIR = path.join(process.cwd(), 'public', 'icons');
 async function generateIcons() {
   try {
     // 1. App Icon
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlack.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(512, 512)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-512.png'));
     
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlack.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(192, 192)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-192.png'));
       
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlack.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(144, 144)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-144.png'));
       
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlack.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(96, 96)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-96.png'));
       
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlack.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(72, 72)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-72.png'));
 
     // 2. Maskable / Splash Screen
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlackNoBg.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(512, 512)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-maskable-512.png'));
       
-    await sharp(path.join(PUBLIC_DIR, 'WhiteOnBlackNoBg.svg'))
+    await sharp(path.join(PUBLIC_DIR, 'FinalAppLogo.svg'))
       .resize(192, 192)
       .png()
       .toFile(path.join(PUBLIC_DIR, 'icon-maskable-192.png'));

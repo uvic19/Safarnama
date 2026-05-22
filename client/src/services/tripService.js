@@ -125,16 +125,22 @@ export const tripService = {
       is_active: true,
     });
 
-    const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
-    fetch(`${SERVER_URL}/api/notify/member-joined`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tripId: tripDoc.id,
-        newMemberId: user.uid,
-        newMemberName: user.displayName || user.email || 'A new member'
-      })
-    }).catch(() => { /* ignore */ });
+    try {
+      const targetIds = (trip.member_ids || []).filter(id => id !== user.uid);
+      const notificationsPromises = targetIds.map(targetId => {
+        return addDoc(collection(db, 'users', targetId, 'notifications'), {
+          title: `New Member in ${trip.name}`,
+          body: `${user.displayName || user.email || 'A new member'} has joined the trip!`,
+          type: 'MEMBER_JOINED',
+          tripId: tripDoc.id,
+          is_read: false,
+          created_at: serverTimestamp()
+        });
+      });
+      await Promise.all(notificationsPromises);
+    } catch (error) {
+      console.error('Failed to create member joined notification:', error);
+    }
 
     return tripDoc.id;
   }
