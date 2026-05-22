@@ -32,8 +32,8 @@ self.addEventListener('notificationclick', function(event) {
 
   if (event.action === 'approve' || event.action === 'decline') {
     // Send a silent request to our Render Node.js backend
-    // Since we are running locally for now, use localhost. In prod, this will be your render URL.
-    const SERVER_URL = 'http://localhost:3000'; 
+    // Since we are running locally for now, use local IP. In prod, this will be your render URL.
+    const SERVER_URL = 'http://10.163.47.219:3000'; 
     
     event.waitUntil(
       fetch(`${SERVER_URL}/api/action/expense`, {
