@@ -134,7 +134,7 @@ export const tripService = {
         newMemberId: user.uid,
         newMemberName: user.displayName || user.email || 'A new member'
       })
-    }).catch(console.error);
+    }).catch(() => { /* ignore */ });
 
     return tripDoc.id;
   }

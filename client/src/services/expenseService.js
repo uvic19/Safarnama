@@ -55,7 +55,7 @@ export const expenseService = {
         currency: payload.currency,
         description: payload.description
       })
-    }).catch(console.error);
+    }).catch(() => { /* ignore push error to prevent breaking UI */ });
 
     return docRef.id;
   },
@@ -120,7 +120,7 @@ export const expenseService = {
         expenseId,
         approverName
       })
-    }).catch(console.error);
+    }).catch(() => { /* ignore error to avoid UI crash */ });
   },
 
   /** Reject a pending expense with a reason. */
