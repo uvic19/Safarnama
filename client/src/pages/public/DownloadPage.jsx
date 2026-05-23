@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import FloatingNav from '../../components/layout/FloatingNav';
 import Footer from '../../components/layout/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Smartphone, Info } from 'lucide-react';
+import { ArrowLeft, Download, Smartphone, Info, Apple, Share } from 'lucide-react';
 
 export default function DownloadPage() {
   return (
@@ -70,6 +70,43 @@ export default function DownloadPage() {
                     Open Web App →
                   </Button>
                 </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* iOS Section */}
+          <div className="mt-8 p-[1px] rounded-3xl bg-white/[0.05] ring-1 ring-white/[0.05]">
+            <div className="rounded-[calc(1.5rem-1px)] bg-card p-8 md:p-12 shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]">
+              <div className="flex flex-col md:flex-row items-center gap-12">
+                <div className="flex-1 text-center md:text-left">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 border border-white/10 mb-6">
+                    <Apple className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="font-display text-3xl font-bold text-white mb-4">
+                    Get Safarnama for iOS
+                  </h2>
+                  <p className="font-body text-zinc-400 mb-8 leading-relaxed">
+                    Install Safarnama directly from Safari to your Home Screen. Enjoy the full, app-like experience without the App Store.
+                  </p>
+                  
+                  <Link to="/login">
+                    <Button size="lg" className="w-full md:w-auto h-14 px-8 rounded-full border border-white/20 bg-transparent text-white hover:bg-white/10 font-body text-base font-semibold group flex items-center justify-center gap-2">
+                      Open App in Safari
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="w-full md:w-64">
+                  <div className="bg-zinc-950 border border-white/10 rounded-2xl p-6">
+                    <h3 className="font-body font-semibold text-white mb-4 text-sm uppercase tracking-wider">How to Install</h3>
+                    <ol className="font-body text-sm text-zinc-400 space-y-3 list-decimal list-inside">
+                      <li>Open the app in <span className="text-white">Safari</span></li>
+                      <li className="flex items-center gap-2">Tap Share <Share className="w-3 h-3 text-white inline" /></li>
+                      <li>Select <span className="text-white">"Add to Home Screen"</span></li>
+                      <li>Tap <span className="text-white">Add</span> in the top right</li>
+                    </ol>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

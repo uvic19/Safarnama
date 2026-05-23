@@ -26,7 +26,7 @@ export default function LandingPage() {
             Plan itineraries, track expenses instantly, and settle up with one-tap UPI. The utility-first toolkit for the power traveler.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 mb-20 z-10">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 z-10 flex-wrap">
             <Link to="/login" className="group flex items-center bg-white text-black rounded-full pl-6 pr-2 py-2 hover:bg-zinc-200 transition-all duration-300">
               <span className="font-body font-semibold text-base mr-4">Start Planning</span>
               <div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center transition-transform group-hover:translate-x-1">
@@ -35,6 +35,9 @@ export default function LandingPage() {
             </Link>
             <Link to="/download" className="group flex items-center rounded-full px-6 py-3 border border-white/10 bg-white/5 hover:bg-white/10 transition-all">
               <span className="font-body font-medium text-base text-white">Download APK</span>
+            </Link>
+            <Link to="/guide" className="group flex items-center rounded-full px-6 py-3 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all">
+              <span className="font-body font-medium text-base text-emerald-400">App Guide</span>
             </Link>
           </div>
 

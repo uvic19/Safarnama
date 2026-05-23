@@ -61,7 +61,17 @@
   html, body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    /* Prevent Chrome/Safari long-press context menus and text selection on mobile */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
     @apply antialiased selection:bg-white/10 selection:text-white;
+  }
+
+  /* Keep inputs and textareas selectable so typing works normally */
+  input, textarea {
+    -webkit-user-select: auto;
+    user-select: auto;
   }
 }
 

@@ -33,6 +33,8 @@ export const expenseService = {
       paid_by_id: expenseData.paid_by_id || userId,
       paid_by_name: expenseData.paid_by_name || 'You',
       split_among: expenseData.split_among || [],
+      split_mode: expenseData.split_mode || 'EQUAL',
+      split_details: expenseData.split_details || {},
       payment_mode: expenseData.payment_mode || 'Cash',
       status: isAutoApproved ? 'APPROVED' : 'PENDING',
       created_by: userId,
@@ -89,6 +91,8 @@ export const expenseService = {
       paid_by_id: expenseData.paid_by_id,
       paid_by_name: expenseData.paid_by_name,
       split_among: expenseData.split_among || [],
+      split_mode: expenseData.split_mode || 'EQUAL',
+      split_details: expenseData.split_details || {},
       payment_mode: expenseData.payment_mode || 'Cash',
     };
 

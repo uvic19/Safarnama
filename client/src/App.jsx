@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import LandingPage from './pages/public/LandingPage';
+import GuidePage from './pages/public/GuidePage';
 import DownloadPage from './pages/public/DownloadPage';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import InAppGuidePage from './pages/dashboard/InAppGuidePage';
 import CreateTripPage from './pages/trip/CreateTripPage';
 import TripOverviewPage from './pages/trip/TripOverviewPage';
 import JoinTripPage from './pages/trip/JoinTripPage';
@@ -52,6 +54,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/guide" element={<GuidePage />} />
         <Route path="/download" element={<DownloadPage />} />
         <Route path="/login" element={<LoginPage />} />
 
@@ -64,6 +67,7 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/app-guide" element={<InAppGuidePage />} />
           <Route path="/trips/new" element={<CreateTripPage />} />
           <Route path="/trips/join" element={<JoinTripPage />} />
           <Route path="/trips/:id" element={<TripOverviewPage />} />

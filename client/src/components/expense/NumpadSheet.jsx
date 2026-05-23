@@ -6,7 +6,7 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
 import CategoryIcon, { CATEGORIES } from './CategoryIcon';
-import SplitSelector from './SplitSelector';
+import AdvancedSplitSelector from './AdvancedSplitSelector';
 import { expenseService } from '../../services/expenseService';
 import { useAuth } from '../../hooks/useAuth';
 import ConfirmDialog from '../ui/ConfirmDialog';
@@ -33,6 +33,8 @@ const initialForm = {
   paid_by_id: '',
   paid_by_name: '',
   split_among: [],
+  split_mode: 'EQUAL',
+  split_details: {},
   payment_mode: 'Cash',
   description: '',
   currency: '',
@@ -63,6 +65,8 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
             paid_by_id: expenseToEdit.paid_by_id || '',
             paid_by_name: expenseToEdit.paid_by_name || '',
             split_among: expenseToEdit.split_among || [],
+            split_mode: expenseToEdit.split_mode || 'EQUAL',
+            split_details: expenseToEdit.split_details || {},
             payment_mode: expenseToEdit.payment_mode || 'Cash',
             description: expenseToEdit.description || '',
             currency: expenseToEdit.currency || baseCurrency,
@@ -76,6 +80,8 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
             paid_by_id: user?.uid || '',
             paid_by_name: user?.displayName || user?.email || 'You',
             split_among: m.map((mem) => mem.id),
+            split_mode: 'EQUAL',
+            split_details: {},
             payment_mode: 'Cash',
             description: '',
             currency: baseCurrency,
@@ -186,6 +192,13 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
 
   const canAdvance = () => {
     if (step === 0) return form.amount && Number(form.amount) > 0;
+    if (step === 3) {
+      if (form.split_mode === 'EXACT') {
+        const sum = Object.values(form.split_details).reduce((s, v) => s + (Number(v) || 0), 0);
+        return Math.abs(sum - Number(form.amount)) < 0.01;
+      }
+      return form.split_among.length > 0;
+    }
     return true;
   };
 
@@ -346,10 +359,16 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
                   Solo trip — no split needed.
                 </p>
               ) : (
-                <SplitSelector
+                <AdvancedSplitSelector
                   members={members}
-                  selected={form.split_among}
-                  onChange={(sel) => setForm((p) => ({ ...p, split_among: sel }))}
+                  splitMode={form.split_mode}
+                  splitAmong={form.split_among}
+                  splitDetails={form.split_details}
+                  totalAmount={form.amount}
+                  currency={form.currency || baseCurrency}
+                  onChangeMode={(mode) => setForm((p) => ({ ...p, split_mode: mode }))}
+                  onChangeEqual={(sel) => setForm((p) => ({ ...p, split_among: sel }))}
+                  onChangeExact={(det) => setForm((p) => ({ ...p, split_details: det }))}
                   currentUser={user}
                 />
               )}
@@ -428,7 +447,9 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Split</span>
-                  <span className="text-foreground">{form.split_among.length} members</span>
+                  <span className="text-foreground">
+                    {form.split_mode === 'EXACT' ? 'Exact split' : `Equally among ${form.split_among.length}`}
+                  </span>
                 </div>
                 {expenseToEdit && form.created_at && (
                   <div className="flex justify-between text-sm">

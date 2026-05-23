@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, LogOut, User as UserIcon, WifiOff } from 'lucide-react';
+import { Bell, LogOut, User as UserIcon, WifiOff, Info } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -62,6 +62,15 @@ export default function TopBar() {
             <WifiOff className="w-4 h-4 text-rose-500" />
           </div>
         )}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-full relative text-zinc-400 hover:text-white hover:bg-white/5"
+          onClick={() => navigate('/app-guide')}
+          title="App Guide"
+        >
+          <Info className="w-5 h-5" />
+        </Button>
         <Button 
           variant="ghost" 
           size="icon" 

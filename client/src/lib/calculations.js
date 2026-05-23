@@ -33,14 +33,24 @@ export function computeBalances(members = [], expenses = [], settlements = []) {
     }
 
     // Debit the people who share this expense
-    const splitCount = expense.split_among?.length || 1;
-    const splitAmount = amount / splitCount;
+    if (expense.split_mode === 'EXACT' && expense.split_details) {
+      const rate = Number(expense.exchange_rate || 1);
+      Object.entries(expense.split_details).forEach(([memberId, localAmount]) => {
+        if (memberBalances[memberId] && localAmount > 0) {
+          memberBalances[memberId].total_owed += Number(localAmount) * rate;
+        }
+      });
+    } else {
+      // Fallback to EQUAL split
+      const splitCount = expense.split_among?.length || 1;
+      const splitAmount = amount / splitCount;
 
-    expense.split_among?.forEach(memberId => {
-      if (memberBalances[memberId]) {
-        memberBalances[memberId].total_owed += splitAmount;
-      }
-    });
+      expense.split_among?.forEach(memberId => {
+        if (memberBalances[memberId]) {
+          memberBalances[memberId].total_owed += splitAmount;
+        }
+      });
+    }
   });
 
   // 3. Process CONFIRMED settlements
