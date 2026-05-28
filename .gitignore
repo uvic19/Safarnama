@@ -6,3 +6,10 @@
 !/server/
 !/.gitignore
 !/README.md
+!/firebase.json
+!/firestore.rules
+!/.firebaserc
+
+# Explicitly exclude JVM crash logs and scratch files (belt-and-suspenders)
+*.log
+payload*.json

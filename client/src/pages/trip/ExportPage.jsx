@@ -4,8 +4,8 @@ import { ArrowLeft, Download, CheckSquare, Square, Filter } from 'lucide-react';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Button } from '../../components/ui/button';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generateExpensePDF } from '../../lib/pdfExport';
+import { toast } from 'sonner';
 
 export default function ExportPage() {
   const { id } = useParams();
@@ -102,43 +102,16 @@ export default function ExportPage() {
     if (!trip || filteredExpenses.length === 0) return;
     setExporting(true);
     try {
-      const pdf = new jsPDF();
-      const pageWidth = pdf.internal.pageSize.width;
-      const baseCurr = trip.base_currency || 'INR';
-      
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(22);
-      pdf.text(`${trip.name} - Expense Report`, pageWidth / 2, 20, { align: 'center' });
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.text(`Exported on: ${new Date().toLocaleString()}`, pageWidth / 2, 28, { align: 'center' });
-
-      pdf.setFontSize(12);
-      pdf.text(`Filtered Total: ${baseCurr} ${filteredTotal.toLocaleString()}`, 14, 40);
-      pdf.text(`Number of Expenses: ${filteredExpenses.length}`, 14, 48);
-      
-      const filterSummary = `Filters: ${selectedCategories.size === uniqueCategories.length ? 'All Categories' : 'Custom Categories'}, ${selectedDates.size === uniqueDates.length ? 'All Days' : 'Custom Days'}`;
-      pdf.text(filterSummary, 14, 56);
-
-      const tableData = filteredExpenses.map(exp => {
-        const amtStr = exp.currency && exp.currency !== baseCurr
-          ? `${exp.currency} ${exp.amount} (${baseCurr} ${exp.amountVal})` 
-          : `${baseCurr} ${exp.amountVal}`;
-        return [exp.dateStr, exp.category || 'Other', exp.description || '-', exp.paid_by_name || 'Someone', amtStr];
+      const filterSummary = `${selectedCategories.size === uniqueCategories.length ? 'All Categories' : 'Custom Categories'}, ${selectedDates.size === uniqueDates.length ? 'All Days' : 'Custom Days'}`;
+      generateExpensePDF(trip, filteredExpenses, {
+        title: `${trip.name} — Expense Report`,
+        subtitle: `Exported on: ${new Date().toLocaleString()} · Filters: ${filterSummary}`,
+        filename: `safarnama_export_${trip.name.replace(/\s+/g, '_').toLowerCase()}`,
+        filteredTotal,
       });
-
-      autoTable(pdf, {
-        startY: 65,
-        head: [['Date', 'Category', 'Description', 'Paid By', 'Amount']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [24, 24, 27] }, // zinc-900
-      });
-
-      pdf.save(`safarnama_export_${trip.name.replace(/\s+/g, '_').toLowerCase()}.pdf`);
     } catch (err) {
-      console.error('PDF generation failed', err);
+      console.error('[ExportPage] PDF generation failed:', err);
+      toast.error('Failed to generate PDF');
     } finally {
       setExporting(false);
     }

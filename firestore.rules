@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper: is the requesting user a member of this trip? ───
+    // We use member_ids (flat array on the doc) so collection queries work.
+    // exists() only works for single-document reads, not collection queries.
+    function isMember(tripData) {
+      return request.auth.uid in tripData.member_ids;
+    }
+    function isKaptan(tripData) {
+      return tripData.kaptan_id == request.auth.uid;
+    }
+
+    // ───── TRIPS ─────
+    match /trips/{tripId} {
+      // Read is allowed only if the user is the Kaptan or a confirmed member.
+      // GROUP_FULL trips are NOT world-readable — the invite code lookup is
+      // done via a query filtered by invite_code, which is allowable because
+      // the user is authenticated and we rely on Firestore query rules
+      // (only docs matching the rule are returned). The old open read on
+      // mode == 'GROUP_FULL' was a data-privacy breach.
+      allow read: if request.auth != null && (
+        isKaptan(resource.data) ||
+        isMember(resource.data)
+      );
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        isKaptan(resource.data) ||
+        (
+          resource.data.mode == 'GROUP_FULL' &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['member_ids']) &&
+          request.auth.uid in request.resource.data.member_ids
+        )
+      );
+      allow delete: if request.auth != null && isKaptan(resource.data);
+
+      // ───── MEMBERS SUBCOLLECTION ─────
+      // Individual doc reads/writes only (no collection queries needed from client)
+      match /members/{memberId} {
+        allow read: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow write: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          request.auth.uid == memberId
+        );
+      }
+
+      // ───── EXPENSES SUBCOLLECTION ─────
+      match /expenses/{expenseId} {
+        allow read: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow create: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow update, delete: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          (
+            resource.data.get('created_by', resource.data.paid_by_id) == request.auth.uid &&
+            resource.data.status != 'APPROVED'
+          )
+        );
+      }
+
+      // ───── SETTLEMENTS SUBCOLLECTION ─────
+      match /settlements/{settlementId} {
+        allow read: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow create, update, delete: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+      }
+
+      // ───── ITINERARY SUBCOLLECTION ─────
+      match /itinerary/{stopId} {
+        allow read: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow create, update, delete: if request.auth != null &&
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data);
+      }
+      // ───── PLANS SUBCOLLECTION ─────
+      match /plans/{planId} {
+        allow read: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow create, update, delete: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+      }
+
+      // ───── SUGGESTIONS SUBCOLLECTION ─────
+      match /suggestions/{suggestionId} {
+        allow read: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+        allow create, update, delete: if request.auth != null && (
+          isKaptan(get(/databases/$(database)/documents/trips/$(tripId)).data) ||
+          isMember(get(/databases/$(database)/documents/trips/$(tripId)).data)
+        );
+      }
+    }
+
+    // ───── USERS ─────
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+
+      match /notifications/{notificationId} {
+        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null;
+      }
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

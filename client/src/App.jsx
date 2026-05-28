@@ -22,6 +22,7 @@ import TripSummaryPage from './pages/trip/TripSummaryPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
 import TemplatesPage from './pages/TemplatesPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import { useFCM } from './hooks/useFCM';
 import ReloadPrompt from './components/ui/ReloadPrompt';
@@ -50,46 +51,48 @@ function AuthGuard({ children }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/guide" element={<GuidePage />} />
-        <Route path="/download" element={<DownloadPage />} />
-        <Route path="/login" element={<LoginPage />} />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/guide" element={<GuidePage />} />
+          <Route path="/download" element={<DownloadPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Authenticated Routes wrapped in AppShell */}
-        <Route 
-          element={
-            <AuthGuard>
-              <AppShell />
-            </AuthGuard>
-          }
-        >
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/app-guide" element={<InAppGuidePage />} />
-          <Route path="/trips/new" element={<CreateTripPage />} />
-          <Route path="/trips/join" element={<JoinTripPage />} />
-          <Route path="/trips/:id" element={<TripOverviewPage />} />
-          <Route path="/trips/:id/expenses" element={<ExpenseListPage />} />
-          <Route path="/trips/:id/expenses/pending" element={<PendingExpensesPage />} />
-          <Route path="/trips/:id/balances" element={<BalancePage />} />
-          <Route path="/trips/:id/settlement" element={<SettlementPage />} />
-          <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
-          <Route path="/trips/:id/plans" element={<PlansPage />} />
-          <Route path="/trips/:id/suggestions" element={<SuggestionsPage />} />
-          <Route path="/trips/:id/export" element={<ExportPage />} />
-          <Route path="/trips/:id/summary" element={<TripSummaryPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/templates" element={<TemplatesPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
-        
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <ReloadPrompt />
-    </BrowserRouter>
+          {/* Authenticated Routes wrapped in AppShell */}
+          <Route 
+            element={
+              <AuthGuard>
+                <AppShell />
+              </AuthGuard>
+            }
+          >
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/app-guide" element={<InAppGuidePage />} />
+            <Route path="/trips/new" element={<CreateTripPage />} />
+            <Route path="/trips/join" element={<JoinTripPage />} />
+            <Route path="/trips/:id" element={<TripOverviewPage />} />
+            <Route path="/trips/:id/expenses" element={<ExpenseListPage />} />
+            <Route path="/trips/:id/expenses/pending" element={<PendingExpensesPage />} />
+            <Route path="/trips/:id/balances" element={<BalancePage />} />
+            <Route path="/trips/:id/settlement" element={<SettlementPage />} />
+            <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
+            <Route path="/trips/:id/plans" element={<PlansPage />} />
+            <Route path="/trips/:id/suggestions" element={<SuggestionsPage />} />
+            <Route path="/trips/:id/export" element={<ExportPage />} />
+            <Route path="/trips/:id/summary" element={<TripSummaryPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/templates" element={<TemplatesPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+          
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <ReloadPrompt />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

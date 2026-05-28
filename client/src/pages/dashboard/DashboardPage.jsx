@@ -8,6 +8,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { KeyRound, Plus, Wallet } from 'lucide-react';
 import { userService } from '../../services/userService';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -32,9 +33,11 @@ export default function DashboardPage() {
         );
         const snap = await getDocs(q);
         const loadedTrips = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        
-        // Auto-seed default trip if they have no trips and haven't been seeded yet
+
+        // Fetch profile once — reuse for both seeding check and UPI prompt
         const profile = await userService.getUserProfile(user.uid);
+
+        // Auto-seed default trip if they have no trips and haven't been seeded yet
         if (loadedTrips.length === 0 && !profile?.has_seeded_default_trip) {
           try {
             const goaTemplate = TEMPLATES[0]; // Goa Weekend Getaway
@@ -42,7 +45,7 @@ export default function DashboardPage() {
             const endDate = new Date(today);
             endDate.setDate(endDate.getDate() + (goaTemplate.duration_days - 1));
 
-            const tripId = await tripService.createTrip({
+            await tripService.createTrip({
               name: goaTemplate.name,
               destinations: goaTemplate.destinations,
               start_date: today.toISOString().split('T')[0],
@@ -52,33 +55,28 @@ export default function DashboardPage() {
               total_budget: goaTemplate.estimated_budget,
               template_itinerary: goaTemplate.itinerary
             }, user.uid);
-            
+
             await userService.updateUserProfile(user.uid, { has_seeded_default_trip: true });
-            
+
             // Refetch after seeding
             const newSnap = await getDocs(q);
             setTrips(newSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
           } catch (seedErr) {
-            console.error('Failed to auto-seed default trip', seedErr);
+            console.error('[DashboardPage] Failed to auto-seed default trip:', seedErr);
             setTrips(loadedTrips);
           }
         } else {
           setTrips(loadedTrips);
         }
-      } catch (e) {
-        console.error('Failed to load trips', e);
-      } finally {
-        setLoading(false);
-      }
 
-      // Check UPI setup globally
-      try {
-        const profile = await userService.getUserProfile(user.uid);
+        // Show UPI setup prompt if not yet configured or dismissed
         if (!profile?.upi_id && !profile?.upi_prompt_dismissed) {
           setShowUpiPrompt(true);
         }
       } catch (e) {
-        console.error('Failed to load user profile for UPI check', e);
+        console.error('[DashboardPage] Failed to load trips:', e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchTrips();
@@ -90,7 +88,8 @@ export default function DashboardPage() {
       await userService.updateUserProfile(user.uid, { upi_id: upiIdInput, upi_prompt_dismissed: true });
       setShowUpiPrompt(false);
     } catch (err) {
-      console.error(err);
+      console.error('[DashboardPage] Failed to save UPI ID:', err);
+      toast.error('Failed to save UPI ID');
     } finally {
       setSavingUpi(false);
     }

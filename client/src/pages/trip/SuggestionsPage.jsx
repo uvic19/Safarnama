@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, ExternalLink, Plus, MapPin } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/button';
@@ -9,6 +9,7 @@ import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import LocationPicker from '../../components/itinerary/LocationPicker';
+import { suggestionService } from '../../services/suggestionService';
 
 export default function SuggestionsPage() {
   const { id } = useParams();
@@ -34,9 +35,8 @@ export default function SuggestionsPage() {
       }
     });
 
-    const q = query(collection(db, 'trips', id, 'suggestions'), orderBy('created_at', 'desc'));
-    const unsubSugg = onSnapshot(q, (snap) => {
-      setSuggestions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsubSugg = suggestionService.subscribeToSuggestions(id, (data) => {
+      setSuggestions(data);
       setLoading(false);
     });
     
@@ -59,19 +59,18 @@ export default function SuggestionsPage() {
     
     setSubmitting(true);
     try {
-      await addDoc(collection(db, 'trips', id, 'suggestions'), {
-        place_name: finalPlaceName,
+      await suggestionService.addSuggestion(id, {
+        placeName: finalPlaceName,
         lat: isManual ? null : (newLocation.lat || null),
         lng: isManual ? null : (newLocation.lng || null),
-        created_by: user.uid,
-        created_by_name: user.displayName || 'Traveler',
-        created_at: serverTimestamp()
+        userId: user.uid,
+        userName: user.displayName || 'Traveler',
       });
       setNewLocation({ place_name: '', lat: '', lng: '' });
       setManualText('');
       setIsAddOpen(false);
       toast.success('Suggestion added!');
-    } catch (err) {
+    } catch {
       toast.error('Failed to add suggestion');
     } finally {
       setSubmitting(false);
@@ -80,7 +79,7 @@ export default function SuggestionsPage() {
 
   const isUrl = (text) => {
     if (!text) return false;
-    try { return Boolean(new URL(text)); } catch(e) { return false; }
+    try { return Boolean(new URL(text)); } catch { return false; }
   };
 
   if (loading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading suggestions...</div>;
@@ -110,7 +109,7 @@ export default function SuggestionsPage() {
             <p>No locations suggested yet. Be the first to suggest a place!</p>
           </div>
         ) : (
-          suggestions.map(s => {
+          suggestions.map((s) => {
             const placeText = s.place_name || s.text || 'Unknown Location';
             const hasCoords = s.lat && s.lng;
             return (
@@ -178,7 +177,7 @@ export default function SuggestionsPage() {
                 <label className="text-sm font-medium text-foreground">Suggestion details</label>
                 <Input 
                   value={manualText} 
-                  onChange={e => setManualText(e.target.value)} 
+                  onChange={(e) => setManualText(e.target.value)} 
                   placeholder="Paste a link or type a place name..." 
                   className="w-full"
                 />

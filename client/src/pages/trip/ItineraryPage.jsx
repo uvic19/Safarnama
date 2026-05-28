@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { ArrowLeft, Camera, Compass, Dumbbell, Lock, MapPinned, Plus, UtensilsCrossed, Unlock, Hotel } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../../lib/firebase';
@@ -13,6 +13,7 @@ import LocationPicker from '../../components/itinerary/LocationPicker';
 import MapView from '../../components/itinerary/MapView';
 import TimelineDay from '../../components/itinerary/TimelineDay';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { itineraryService } from '../../services/itineraryService';
 
 const EMPTY_FORM = {
   stop_type: 'TOURIST',
@@ -102,21 +103,20 @@ export default function ItineraryPage() {
         const tripDoc = await getDoc(doc(db, 'trips', id));
         if (tripDoc.exists()) setTrip({ id: tripDoc.id, ...tripDoc.data() });
 
-        const itineraryQuery = query(collection(db, 'trips', id, 'itinerary'), orderBy('order_index', 'asc'));
-        unsubStops = onSnapshot(
-          itineraryQuery,
-          (snapshot) => {
-            setStops(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+        unsubStops = itineraryService.subscribeToStops(
+          id,
+          (data) => {
+            setStops(data);
             setLoading(false);
           },
           (error) => {
-            console.error('Failed to listen to itinerary stops', error);
+            console.error('[ItineraryPage] Failed to listen to stops:', error);
             toast.error('No permission to load itinerary stops');
             setLoading(false);
           },
         );
       } catch (error) {
-        console.error('Failed to load itinerary', error);
+        console.error('[ItineraryPage] Failed to load itinerary:', error);
         toast.error('Could not load itinerary');
         setLoading(false);
       }
@@ -127,16 +127,20 @@ export default function ItineraryPage() {
   }, [id]);
 
   const isKaptan = trip?.kaptan_id === user?.uid;
-  const timelineDays = useMemo(() => groupStops(stops), [stops]);
+
+  // Compute sorted stops once; derive both timelineDays and mappedStops from the same result
+  // to avoid running normalizeStops (a sort) twice on every render.
+  const sortedStops = useMemo(() => normalizeStops(stops), [stops]);
+  const timelineDays = useMemo(() => groupStops(sortedStops), [sortedStops]);
   const mappedStops = useMemo(
     () =>
-      normalizeStops(stops).map((stop) => ({
+      sortedStops.map((stop) => ({
         ...stop,
         latitude: stop.lat,
         longitude: stop.lng,
         dateLabel: toInputDate(stop.date),
       })),
-    [stops],
+    [sortedStops],
   );
 
   const openAddStop = (date, overrideForm = {}) => {
@@ -152,7 +156,8 @@ export default function ItineraryPage() {
 
   useEffect(() => {
     if (location.state?.prefillSuggestion && trip && !dialogOpen && !loading) {
-      // Small timeout to allow render to settle
+      // Defer opening the dialog by one tick to allow the onSnapshot-driven
+      // stop state to hydrate before the dialog renders its form.
       setTimeout(() => {
         const sugg = location.state.prefillSuggestion;
         const placeName = typeof sugg === 'string' ? sugg : sugg.place_name;
@@ -165,7 +170,7 @@ export default function ItineraryPage() {
           lng, 
           notes: 'From suggestion' 
         });
-        // Clear the state so it doesn't reopen if they close it
+        // Clear the router state so the dialog doesn't reopen on next render
         navigate(location.pathname, { replace: true, state: {} });
       }, 100);
     }
@@ -223,16 +228,12 @@ export default function ItineraryPage() {
         lat: form.lat ? Number(form.lat) : null,
         lng: form.lng ? Number(form.lng) : null,
         order_index: Number(form.order_index ?? stops.length),
-        updated_at: serverTimestamp(),
       };
 
       if (editingStopId) {
-        await updateDoc(doc(db, 'trips', id, 'itinerary', editingStopId), payload);
+        await itineraryService.updateStop(id, editingStopId, payload);
       } else {
-        await addDoc(collection(db, 'trips', id, 'itinerary'), {
-          ...payload,
-          created_at: serverTimestamp(),
-        });
+        await itineraryService.addStop(id, payload);
       }
 
       setDialogOpen(false);
@@ -240,7 +241,7 @@ export default function ItineraryPage() {
       setEditingStopId(null);
       toast.success(editingStopId ? 'Stop updated' : 'Stop added to itinerary');
     } catch (error) {
-      console.error('Failed to save itinerary stop', error);
+      console.error('[ItineraryPage] Failed to save stop:', error);
       toast.error('Could not save stop');
     } finally {
       setSaving(false);
@@ -251,11 +252,11 @@ export default function ItineraryPage() {
     if (!isKaptan || !stopToDelete) return;
 
     try {
-      await deleteDoc(doc(db, 'trips', id, 'itinerary', stopToDelete.id));
+      await itineraryService.deleteStop(id, stopToDelete.id);
       setStopToDelete(null);
       toast.success('Stop deleted');
     } catch (error) {
-      console.error('Failed to delete itinerary stop', error);
+      console.error('[ItineraryPage] Failed to delete stop:', error);
       toast.error('Could not delete stop');
     }
   };
@@ -265,11 +266,11 @@ export default function ItineraryPage() {
 
     try {
       const nextValue = !trip.itinerary_locked;
-      await updateDoc(doc(db, 'trips', id), { itinerary_locked: nextValue });
+      await itineraryService.setLocked(id, nextValue);
       setTrip((current) => ({ ...current, itinerary_locked: nextValue }));
       toast.success(nextValue ? 'Itinerary locked' : 'Itinerary unlocked');
     } catch (error) {
-      console.error('Failed to update itinerary lock', error);
+      console.error('[ItineraryPage] Failed to update lock:', error);
       toast.error('Could not update lock state');
     }
   };

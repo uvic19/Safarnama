@@ -4,8 +4,8 @@ import { ArrowLeft, CheckCircle2, MapPin, CalendarDays, Wallet, Download } from 
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Button } from '../../components/ui/button';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generateExpensePDF } from '../../lib/pdfExport';
+import { toast } from 'sonner';
 
 export default function TripSummaryPage() {
   const { id } = useParams();
@@ -20,50 +20,25 @@ export default function TripSummaryPage() {
     if (!trip) return;
     setExporting(true);
     try {
-      const pdf = new jsPDF();
-      const pageWidth = pdf.internal.pageSize.width;
-      
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(22);
-      pdf.text(trip.name, pageWidth / 2, 20, { align: 'center' });
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(12);
-      pdf.text(`Destinations: ${Array.isArray(trip.destinations) ? trip.destinations.join(', ') : (trip.destinations || 'N/A')}`, 14, 35);
-      pdf.text(`Dates: ${trip.start_date || '?'} to ${trip.end_date || '?'}`, 14, 43);
-      
-      const baseCurr = trip.base_currency || 'INR';
-      pdf.text(`Total Spent: ${baseCurr} ${stats.totalExpense.toLocaleString()}`, 14, 51);
-      pdf.text(`Total Expenses: ${stats.expenseCount}`, 14, 59);
-
       const expQ = query(collection(db, 'trips', id, 'expenses'), where('status', '==', 'APPROVED'));
       const expSnap = await getDocs(expQ);
-      
-      const expensesList = expSnap.docs.map(d => d.data()).sort((a, b) => {
-        const da = a.created_at?.toDate ? a.created_at.toDate().getTime() : 0;
-        const dbX = b.created_at?.toDate ? b.created_at.toDate().getTime() : 0;
-        return da - dbX;
-      });
 
-      const tableData = expensesList.map(exp => {
-        const date = exp.created_at?.toDate ? exp.created_at.toDate().toLocaleDateString() : 'Unknown';
-        const amtStr = exp.currency && exp.currency !== baseCurr
-          ? `${exp.currency} ${exp.amount} (${baseCurr} ${exp.amount_in_base || exp.amount})` 
-          : `${baseCurr} ${exp.amount_in_base || exp.amount}`;
-        return [date, exp.category, exp.description || '-', exp.paid_by_name || 'Someone', amtStr];
-      });
+      const expensesList = expSnap.docs
+        .map((expDoc) => expDoc.data())
+        .sort((a, b) => {
+          const da = a.created_at?.toDate ? a.created_at.toDate().getTime() : 0;
+          const db2 = b.created_at?.toDate ? b.created_at.toDate().getTime() : 0;
+          return da - db2;
+        });
 
-      autoTable(pdf, {
-        startY: 70,
-        head: [['Date', 'Category', 'Description', 'Paid By', 'Amount']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [24, 24, 27] }, // zinc-900
+      generateExpensePDF(trip, expensesList, {
+        title: trip.name,
+        subtitle: `${trip.start_date || '?'} to ${trip.end_date || '?'} · Destinations: ${Array.isArray(trip.destinations) ? trip.destinations.join(', ') : (trip.destinations || 'N/A')}`,
+        filename: `safarnama_${trip.name.replace(/\s+/g, '_').toLowerCase()}_summary`,
       });
-
-      pdf.save(`safarnama_${trip.name.replace(/\s+/g, '_').toLowerCase()}_summary.pdf`);
     } catch (err) {
-      console.error('PDF generation failed', err);
+      console.error('[TripSummaryPage] PDF generation failed:', err);
+      toast.error('Failed to generate PDF');
     } finally {
       setExporting(false);
     }

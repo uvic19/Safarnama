@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -120,12 +121,16 @@ export default function TopBar() {
                     try {
                       const permission = await Notification.requestPermission();
                       if (permission === 'granted') {
-                        alert("Notifications enabled! Please refresh the app to register your device.");
+                        toast('Notifications enabled!', {
+                          description: 'Please refresh the app to register your device.',
+                        });
                       } else {
-                        alert("Permission denied. You may need to enable it in your browser settings.");
+                        toast.error('Permission denied', {
+                          description: 'You may need to enable it in your browser settings.',
+                        });
                       }
                     } catch(e) {
-                      console.error(e);
+                      console.error('[TopBar] Notification permission error:', e);
                     }
                   }}
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer outline-none transition-colors"

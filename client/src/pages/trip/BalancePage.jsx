@@ -77,21 +77,22 @@ export default function BalancePage() {
   const { balances, totalGroupSpent } = computeBalances(members, expenses, settlements);
   
   // Find current user's balance
-  const currentUserBalanceObj = balances.find(b => b.id === user.uid) || null;
-  let currentUserMessage = "You are settled up.";
-  let currentUserAmount = "₹0";
-  let currentUserColor = "text-zinc-500";
+  const currentUserBalanceObj = balances.find((b) => b.id === user?.uid) || null;
+  const baseCurr = trip.base_currency || 'INR';
+  let currentUserMessage = 'You are settled up.';
+  let currentUserAmount = `${baseCurr} 0`;
+  let currentUserColor = 'text-zinc-500';
 
   if (currentUserBalanceObj) {
     const cb = currentUserBalanceObj.current_balance;
     if (cb > 0.01) {
-      currentUserMessage = "You get back";
-      currentUserAmount = `₹${Math.round(cb).toLocaleString('en-IN')}`;
-      currentUserColor = "text-emerald-400";
+      currentUserMessage = 'You get back';
+      currentUserAmount = `${baseCurr} ${Math.round(cb).toLocaleString('en-IN')}`;
+      currentUserColor = 'text-emerald-400';
     } else if (cb < -0.01) {
-      currentUserMessage = "You owe";
-      currentUserAmount = `₹${Math.abs(Math.round(cb)).toLocaleString('en-IN')}`;
-      currentUserColor = "text-rose-400";
+      currentUserMessage = 'You owe';
+      currentUserAmount = `${baseCurr} ${Math.abs(Math.round(cb)).toLocaleString('en-IN')}`;
+      currentUserColor = 'text-rose-400';
     }
   }
 
@@ -142,7 +143,7 @@ export default function BalancePage() {
         <div className="flex-1 p-5 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06]">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Total Group Spends</p>
           <p className="font-mono text-3xl font-bold leading-none text-foreground mt-auto pt-1">
-            ₹{Math.round(totalGroupSpent).toLocaleString('en-IN')}
+            {baseCurr} {Math.round(totalGroupSpent).toLocaleString('en-IN')}
           </p>
         </div>
       </div>
@@ -161,11 +162,12 @@ export default function BalancePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {balances
               .sort((a, b) => b.current_balance - a.current_balance) // Creditors first
-              .map(b => (
-                <BalanceCard 
-                  key={b.id} 
-                  balanceObj={b} 
-                  isCurrentUser={b.id === user?.uid} 
+              .map((b) => (
+                <BalanceCard
+                  key={b.id}
+                  balanceObj={b}
+                  isCurrentUser={b.id === user?.uid}
+                  baseCurrency={baseCurr}
                 />
               ))
             }

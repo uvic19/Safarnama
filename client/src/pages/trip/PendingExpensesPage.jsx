@@ -22,7 +22,7 @@ function timeAgo(ts) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function PendingCard({ expense, tripId, onAction }) {
+function PendingCard({ expense, tripId }) {
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,8 +32,7 @@ function PendingCard({ expense, tripId, onAction }) {
     try {
       await expenseService.approveExpense(tripId, expense.id);
       toast.success('Expense approved');
-      onAction();
-    } catch (e) {
+    } catch {
       toast.error('Failed to approve');
     } finally {
       setLoading(false);
@@ -46,8 +45,7 @@ function PendingCard({ expense, tripId, onAction }) {
       await expenseService.rejectExpense(tripId, expense.id, reason);
       toast.success('Expense rejected');
       setRejecting(false);
-      onAction();
-    } catch (e) {
+    } catch {
       toast.error('Failed to reject');
     } finally {
       setLoading(false);
@@ -223,11 +221,10 @@ export default function PendingExpensesPage() {
       {!loading && isKaptan && pending.length > 0 && (
         <div className="space-y-4">
           {pending.map((expense) => (
-            <PendingCard
+          <PendingCard
               key={expense.id}
               expense={expense}
               tripId={id}
-              onAction={() => {}} // real-time listener auto-refreshes
             />
           ))}
         </div>

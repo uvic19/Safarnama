@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, addDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import VotingCard from '../../components/plan/VotingCard';
@@ -10,6 +10,7 @@ import { Input } from '../../components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
 import { Label } from '../../components/ui/label';
 import { toast } from 'sonner';
+import { planService } from '../../services/planService';
 
 export default function PlansPage() {
   const { id } = useParams();
@@ -34,9 +35,8 @@ export default function PlansPage() {
 
   useEffect(() => {
     if (!id) return;
-    const q = query(collection(db, 'trips', id, 'plans'), orderBy('created_at', 'desc'));
-    const unsub = onSnapshot(q, (snap) => {
-      setPlans(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsub = planService.subscribeToPlans(id, (data) => {
+      setPlans(data);
       setLoading(false);
     });
     return unsub;
@@ -44,12 +44,9 @@ export default function PlansPage() {
 
   const handleVote = async (planId, isVoting) => {
     if (!user) return;
-    const planRef = doc(db, 'trips', id, 'plans', planId);
     try {
-      await updateDoc(planRef, {
-        voter_ids: isVoting ? arrayUnion(user.uid) : arrayRemove(user.uid)
-      });
-    } catch (e) {
+      await planService.toggleVote(id, planId, user.uid, isVoting);
+    } catch {
       toast.error('Failed to register vote');
     }
   };
@@ -57,13 +54,9 @@ export default function PlansPage() {
   const handleSelectWinner = async (planId) => {
     if (!trip || trip.kaptan_id !== user?.uid) return;
     try {
-      // Set all other plans to false, this one to true
-      const promises = plans.map(p => 
-        updateDoc(doc(db, 'trips', id, 'plans', p.id), { is_winner: p.id === planId })
-      );
-      await Promise.all(promises);
+      await planService.selectWinner(id, planId, plans.map((p) => p.id));
       toast.success('Winner selected!');
-    } catch (e) {
+    } catch {
       toast.error('Failed to select winner');
     }
   };
@@ -75,19 +68,16 @@ export default function PlansPage() {
     }
     setSubmitting(true);
     try {
-      await addDoc(collection(db, 'trips', id, 'plans'), {
+      await planService.addPlan(id, {
         title: newPlan.title,
         description: newPlan.description,
-        estimated_cost: newPlan.estimated_cost ? Number(newPlan.estimated_cost) : null,
-        created_by: user.uid,
-        created_at: serverTimestamp(),
-        voter_ids: [user.uid], // Creator auto-votes
-        is_winner: false
+        estimatedCost: newPlan.estimated_cost,
+        userId: user.uid,
       });
       setNewPlan({ title: '', description: '', estimated_cost: '' });
       setSheetOpen(false);
       toast.success('Plan added!');
-    } catch (e) {
+    } catch {
       toast.error('Failed to add plan');
     } finally {
       setSubmitting(false);
@@ -105,7 +95,7 @@ export default function PlansPage() {
           <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-white/[0.06] text-muted-foreground">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-display text-2xl font-bold text-foreground">Voting & Plans</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">Voting &amp; Plans</h1>
         </div>
         <Button onClick={() => setSheetOpen(true)} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -119,7 +109,7 @@ export default function PlansPage() {
             No plans suggested yet. Be the first to suggest one!
           </div>
         ) : (
-          plans.map(plan => (
+          plans.map((plan) => (
             <VotingCard 
               key={plan.id} 
               plan={plan} 
@@ -139,15 +129,15 @@ export default function PlansPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Title</Label>
-              <Input value={newPlan.title} onChange={e => setNewPlan({...newPlan, title: e.target.value})} placeholder="e.g. Stay at Taj" />
+              <Input value={newPlan.title} onChange={(e) => setNewPlan({...newPlan, title: e.target.value})} placeholder="e.g. Stay at Taj" />
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
-              <Input value={newPlan.description} onChange={e => setNewPlan({...newPlan, description: e.target.value})} placeholder="Details..." />
+              <Input value={newPlan.description} onChange={(e) => setNewPlan({...newPlan, description: e.target.value})} placeholder="Details..." />
             </div>
             <div className="space-y-2">
               <Label>Estimated Cost</Label>
-              <Input type="number" value={newPlan.estimated_cost} onChange={e => setNewPlan({...newPlan, estimated_cost: e.target.value})} placeholder="0" className="font-mono" />
+              <Input type="number" value={newPlan.estimated_cost} onChange={(e) => setNewPlan({...newPlan, estimated_cost: e.target.value})} placeholder="0" className="font-mono" />
             </div>
             <Button className="w-full mt-4" onClick={handleAddPlan} disabled={submitting}>
               {submitting ? 'Adding...' : 'Submit Suggestion'}

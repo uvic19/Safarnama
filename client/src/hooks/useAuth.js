@@ -1,13 +1,11 @@
-import { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 
+/**
+ * Reads auth state from the Zustand store.
+ * The auth listener is initialized once in main.jsx; this hook is purely reactive.
+ */
 export function useAuth() {
-  const { user, loading, error, loginWithGoogle, loginWithEmail, signUpWithEmail, logout, initAuthListener } = useAuthStore();
-
-  useEffect(() => {
-    const unsubscribe = initAuthListener();
-    return () => unsubscribe();
-  }, [initAuthListener]);
+  const { user, loading, error, loginWithGoogle, loginWithEmail, signUpWithEmail, logout } = useAuthStore();
 
   return {
     user,
@@ -20,3 +18,4 @@ export function useAuth() {
     isAuthenticated: !!user,
   };
 }
+

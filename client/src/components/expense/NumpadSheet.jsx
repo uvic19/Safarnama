@@ -145,10 +145,15 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
         await expenseService.updateExpense(tripId, expenseToEdit.id, finalForm, baseCurrency);
         toast.success('Expense updated!');
       } else {
-        await expenseService.addExpense(tripId, finalForm, user.uid, tripMode, kaptanId, baseCurrency);
+        await expenseService.addExpense(tripId, finalForm, {
+          userId: user.uid,
+          tripMode,
+          kaptanId,
+          baseCurrency,
+        });
         const isKaptan = user.uid === kaptanId;
         toast.success(
-          tripMode === 'SOLO' || isKaptan ? 'Expense added!' : 'Expense submitted for approval'
+          tripMode === 'SOLO' || isKaptan ? 'Expense added!' : 'Expense submitted for approval',
         );
       }
       onAdded?.();

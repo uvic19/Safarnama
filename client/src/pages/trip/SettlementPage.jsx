@@ -223,7 +223,7 @@ export default function SettlementPage() {
                           </p>
                         </div>
                         <span className="font-mono text-xl font-bold text-foreground">
-                          ₹{txn.amount.toLocaleString('en-IN')}
+                          {trip.base_currency || 'INR'} {txn.amount.toLocaleString('en-IN')}
                         </span>
                       </div>
                       

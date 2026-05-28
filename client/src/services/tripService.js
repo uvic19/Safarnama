@@ -1,11 +1,11 @@
 import { db } from '../lib/firebase';
 import { arrayUnion, collection, addDoc, doc, getDocs, limit, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { userService } from './userService';
+import { notificationService } from './notificationService';
 
 export const tripService = {
   async createTrip(tripData, userId) {
     try {
-      // Ensure specific fields are present as per PRD
       const payload = {
         name: tripData.name || 'Untitled Trip',
         destinations: tripData.destinations || [],
@@ -42,7 +42,7 @@ export const tripService = {
         role: 'KAPTAN',
         joined_at: serverTimestamp(),
         is_active: true,
-        upi_id: userProfile?.upi_id || null
+        upi_id: userProfile?.upi_id || null,
       });
 
       // Add offline members if mode is KAPTAN_ONLY
@@ -55,7 +55,7 @@ export const tripService = {
               offline_name: name.trim(),
               role: 'MEMBER',
               joined_at: serverTimestamp(),
-              is_active: true
+              is_active: true,
             });
           }
         }
@@ -64,13 +64,13 @@ export const tripService = {
       // Add template itinerary if provided
       if (tripData.template_itinerary && Array.isArray(tripData.template_itinerary)) {
         const itineraryRef = collection(db, 'trips', docRef.id, 'itinerary');
-        let startDate = tripData.start_date ? new Date(tripData.start_date) : new Date();
-        
+        const startDate = tripData.start_date ? new Date(tripData.start_date) : new Date();
+
         for (let i = 0; i < tripData.template_itinerary.length; i++) {
           const item = tripData.template_itinerary[i];
           const itemDate = new Date(startDate);
           itemDate.setDate(itemDate.getDate() + (item.day_offset || 0));
-          
+
           await addDoc(itineraryRef, {
             place_name: item.place_name || '',
             stop_type: item.stop_type || 'TOURIST',
@@ -80,14 +80,14 @@ export const tripService = {
             date: itemDate,
             order_index: i,
             created_at: serverTimestamp(),
-            updated_at: serverTimestamp()
+            updated_at: serverTimestamp(),
           });
         }
       }
 
       return docRef.id;
     } catch (error) {
-      console.error('Error creating trip:', error);
+      console.error('[tripService] Error creating trip:', error);
       throw error;
     }
   },
@@ -96,35 +96,35 @@ export const tripService = {
     try {
       const docRef = doc(db, 'trips', tripId);
       const payload = { ...updates, updated_at: serverTimestamp() };
-      
+
       if (payload.destinations && typeof payload.destinations === 'string') {
-        payload.destinations = payload.destinations.split(',').map(d => d.trim()).filter(Boolean);
+        payload.destinations = payload.destinations.split(',').map((d) => d.trim()).filter(Boolean);
       }
       if (payload.total_budget !== undefined) {
         payload.total_budget = payload.total_budget ? Number(payload.total_budget) : null;
       }
-      
+
       // If switching to GROUP_FULL and no invite code exists, generate one
       if (payload.mode === 'GROUP_FULL' && (!currentTripData || !currentTripData.invite_code)) {
         payload.invite_code = Math.random().toString(36).substring(2, 8).toUpperCase();
       }
-      
+
       await updateDoc(docRef, payload);
     } catch (error) {
-      console.error('Error updating trip:', error);
+      console.error('[tripService] Error updating trip:', error);
       throw error;
     }
   },
 
   async deleteTrip(tripId) {
     try {
-      // In a production app with backend, you'd trigger a cloud function to cascade delete subcollections.
-      // Here, deleting the parent doc is enough to remove it from all UI queries.
+      // Deleting the parent doc removes it from all UI queries.
+      // Subcollection cleanup should be handled by a Cloud Function in future.
       const docRef = doc(db, 'trips', tripId);
       const { deleteDoc } = await import('firebase/firestore');
       await deleteDoc(docRef);
     } catch (error) {
-      console.error('Error deleting trip:', error);
+      console.error('[tripService] Error deleting trip:', error);
       throw error;
     }
   },
@@ -137,7 +137,7 @@ export const tripService = {
       collection(db, 'trips'),
       where('invite_code', '==', code),
       where('mode', '==', 'GROUP_FULL'),
-      limit(1)
+      limit(1),
     );
     const snap = await getDocs(tripsQuery);
 
@@ -164,24 +164,20 @@ export const tripService = {
       role: 'MEMBER',
       joined_at: serverTimestamp(),
       is_active: true,
-      upi_id: userProfile?.upi_id || null
+      upi_id: userProfile?.upi_id || null,
     });
 
+    // Notify existing members (non-blocking)
     try {
-      const targetIds = (trip.member_ids || []).filter(id => id !== user.uid);
-      const notificationsPromises = targetIds.map(targetId => {
-        return addDoc(collection(db, 'users', targetId, 'notifications'), {
-          title: `New Member in ${trip.name}`,
-          body: `${user.displayName || user.email || 'A new member'} has joined the trip!`,
-          type: 'MEMBER_JOINED',
-          tripId: tripDoc.id,
-          is_read: false,
-          created_at: serverTimestamp()
-        });
+      const existingMemberIds = (trip.member_ids || []).filter((id) => id !== user.uid);
+      await notificationService.notify(existingMemberIds, {
+        title: `New Member in ${trip.name}`,
+        body: `${user.displayName || user.email || 'A new member'} has joined the trip!`,
+        type: 'MEMBER_JOINED',
+        tripId: tripDoc.id,
       });
-      await Promise.all(notificationsPromises);
     } catch (error) {
-      console.error('Failed to create member joined notification:', error);
+      console.error('[tripService] Failed to create member joined notification:', error);
     }
 
     return tripDoc.id;
@@ -196,34 +192,30 @@ export const tripService = {
       if (userIdToRemove) {
         const tripRef = doc(db, 'trips', tripId);
         await updateDoc(tripRef, {
-          member_ids: arrayRemove(userIdToRemove)
+          member_ids: arrayRemove(userIdToRemove),
         });
       }
     } catch (error) {
-      console.error('Error removing member:', error);
+      console.error('[tripService] Error removing member:', error);
       throw error;
     }
   },
 
-  async leaveTrip(tripId, userId) {
-    try {
-      // User is always leaving as themselves
-      return this.removeMember(tripId, userId, userId);
-    } catch (error) {
-      console.error('Error leaving trip:', error);
-      throw error;
-    }
+  /**
+   * Remove the current user from a trip.
+   * Delegates directly to removeMember — the outer try/catch was a misleading double-catch.
+   */
+  leaveTrip(tripId, userId) {
+    return this.removeMember(tripId, userId, userId);
   },
 
   async updateOfflineMemberName(tripId, memberId, newName) {
     try {
       if (!newName.trim()) throw new Error('Name cannot be empty');
       const memberRef = doc(db, 'trips', tripId, 'members', memberId);
-      await updateDoc(memberRef, {
-        offline_name: newName.trim()
-      });
+      await updateDoc(memberRef, { offline_name: newName.trim() });
     } catch (error) {
-      console.error('Error updating member name:', error);
+      console.error('[tripService] Error updating member name:', error);
       throw error;
     }
   },
@@ -237,11 +229,11 @@ export const tripService = {
         offline_name: name.trim(),
         role: 'MEMBER',
         joined_at: serverTimestamp(),
-        is_active: true
+        is_active: true,
       });
     } catch (error) {
-      console.error('Error adding offline member:', error);
+      console.error('[tripService] Error adding offline member:', error);
       throw error;
     }
-  }
+  },
 };

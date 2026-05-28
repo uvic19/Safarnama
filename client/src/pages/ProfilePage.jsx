@@ -1,23 +1,20 @@
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { LogOut, User, Moon, Edit3 } from 'lucide-react';
+import { LogOut, User, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { userService } from '../services/userService';
+import UpiEditor from '../components/ui/UpiEditor';
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
-
   const [globalUpiId, setGlobalUpiId] = useState('');
-  const [editingUpi, setEditingUpi] = useState(false);
-  const [savingUpi, setSavingUpi] = useState(false);
 
   useEffect(() => {
     if (user?.uid) {
-      userService.getUserProfile(user.uid).then(profile => {
+      userService.getUserProfile(user.uid).then((profile) => {
         if (profile?.upi_id) setGlobalUpiId(profile.upi_id);
-      }).catch(err => console.error("Failed to load profile", err));
+      }).catch((err) => console.error('[ProfilePage] Failed to load profile:', err));
     }
   }, [user]);
 
@@ -25,22 +22,15 @@ export default function ProfilePage() {
     try {
       await logout();
       toast.success('Logged out successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to log out');
     }
   };
 
-  const handleSaveUpi = async () => {
-    setSavingUpi(true);
-    try {
-      await userService.updateUserProfile(user.uid, { upi_id: globalUpiId });
-      setEditingUpi(false);
-      toast.success('UPI ID saved successfully');
-    } catch (error) {
-      toast.error('Failed to save UPI ID');
-    } finally {
-      setSavingUpi(false);
-    }
+  const handleSaveUpi = async (newUpiId) => {
+    await userService.updateUserProfile(user.uid, { upi_id: newUpiId });
+    setGlobalUpiId(newUpiId);
+    toast.success('UPI ID saved successfully');
   };
 
   return (
@@ -68,39 +58,14 @@ export default function ProfilePage() {
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">Settings</h3>
         
-        {/* UPI ID Setting */}
-        <div className="p-4 rounded-xl bg-white/[0.02] ring-1 ring-white/[0.06]">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <h3 className="text-sm font-medium text-foreground mb-1">Global UPI ID</h3>
-              <p className="text-xs text-muted-foreground">Used for settlements across all your trips.</p>
-            </div>
-            {!editingUpi && (
-              <Button variant="ghost" size="sm" onClick={() => setEditingUpi(true)} className="h-8 text-muted-foreground hover:text-foreground">
-                <Edit3 className="w-4 h-4 mr-1.5" /> Edit
-              </Button>
-            )}
-          </div>
-          {editingUpi ? (
-            <div className="flex gap-2 mt-4">
-              <Input 
-                value={globalUpiId}
-                onChange={(e) => setGlobalUpiId(e.target.value)}
-                placeholder="e.g., name@okbank"
-                className="bg-white/[0.04]"
-              />
-              <Button onClick={handleSaveUpi} disabled={savingUpi} className="bg-primary text-primary-foreground font-medium w-20">
-                {savingUpi ? '...' : 'Save'}
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/[0.05] ring-1 ring-white/[0.1]">
-              <span className="font-mono text-sm text-primary">{globalUpiId || 'Not set'}</span>
-            </div>
-          )}
-        </div>
+        {/* Global UPI ID — shared component to avoid duplication with SettlementPage */}
+        <UpiEditor
+          value={globalUpiId}
+          onSave={handleSaveUpi}
+          label="Global UPI ID"
+          hint="Used for settlements across all your trips."
+        />
 
-        {/* Placeholder for theme toggle, implemented globally elsewhere but good to have here */}
         <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] ring-1 ring-white/[0.06]">
           <div className="flex items-center gap-3">
             <Moon className="w-5 h-5 text-muted-foreground" />

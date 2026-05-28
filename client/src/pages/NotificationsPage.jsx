@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Bell, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, orderBy, limit, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import NotificationItem from '../components/notification/NotificationItem';
 import { Button } from '../components/ui/button';
+import { userNotificationService } from '../services/userNotificationService';
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
@@ -15,50 +14,37 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     if (!user) return;
-    const fetchNotifications = async () => {
-      try {
-        const q = query(
-          collection(db, 'users', user.uid, 'notifications'),
-          orderBy('created_at', 'desc'),
-          limit(50)
-        );
-        const snap = await getDocs(q);
-        setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      } catch (error) {
-        console.error('Failed to load notifications', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotifications();
+    userNotificationService
+      .getNotifications(user.uid)
+      .then((data) => setNotifications(data))
+      .catch((error) => console.error('[NotificationsPage] Failed to load notifications:', error))
+      .finally(() => setLoading(false));
   }, [user]);
 
   const handleMarkAsRead = async (id) => {
     if (!user) return;
     try {
-      await updateDoc(doc(db, 'users', user.uid, 'notifications', id), { is_read: true });
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      await userNotificationService.markAsRead(user.uid, id);
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
     } catch (error) {
-      console.error('Error marking as read', error);
+      console.error('[NotificationsPage] Error marking as read:', error);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     if (!user) return;
-    const unread = notifications.filter(n => !n.is_read);
-    if (unread.length === 0) return;
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
+    if (unreadIds.length === 0) return;
 
     try {
-      await Promise.all(unread.map(n => 
-        updateDoc(doc(db, 'users', user.uid, 'notifications', n.id), { is_read: true })
-      ));
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      await userNotificationService.markAllAsRead(user.uid, unreadIds);
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (error) {
-      console.error('Error marking all as read', error);
+      console.error('[NotificationsPage] Error marking all as read:', error);
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   if (loading) {
     return (
@@ -110,7 +96,7 @@ export default function NotificationsPage() {
             <p className="text-sm text-muted-foreground">You have no new notifications.</p>
           </div>
         ) : (
-          notifications.map(notif => (
+          notifications.map((notif) => (
             <NotificationItem 
               key={notif.id} 
               notification={notif} 
