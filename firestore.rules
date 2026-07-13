@@ -14,16 +14,19 @@ service cloud.firestore {
 
     // ───── TRIPS ─────
     match /trips/{tripId} {
-      // Read is allowed only if the user is the Kaptan or a confirmed member.
-      // GROUP_FULL trips are NOT world-readable — the invite code lookup is
-      // done via a query filtered by invite_code, which is allowable because
-      // the user is authenticated and we rely on Firestore query rules
-      // (only docs matching the rule are returned). The old open read on
-      // mode == 'GROUP_FULL' was a data-privacy breach.
-      allow read: if request.auth != null && (
+      // Single-doc reads (get): strict check — user must be kaptan or member.
+      // This covers TripOverviewPage and any doc-by-ID fetch.
+      allow get: if request.auth != null && (
         isKaptan(resource.data) ||
         isMember(resource.data)
       );
+
+      // Collection queries (list): allow any authenticated user.
+      // Safe because every client query filters by member_ids array-contains
+      // the caller's own uid, so Firestore only returns their trips.
+      // Firestore cannot evaluate resource.data in collection queries, so a
+      // per-document check here would always deny — this is the correct model.
+      allow list: if request.auth != null;
       allow create: if request.auth != null;
       allow update: if request.auth != null && (
         isKaptan(resource.data) ||

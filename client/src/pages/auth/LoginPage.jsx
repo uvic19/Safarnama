@@ -112,6 +112,7 @@ export default function LoginPage() {
                   <Input
                     id="name"
                     type="text"
+                    autoComplete="name"
                     placeholder="Your name"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -124,6 +125,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@email.com"
                   required
                   value={form.email}
@@ -137,6 +139,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                     placeholder="••••••••"
                     required
                     minLength={6}
