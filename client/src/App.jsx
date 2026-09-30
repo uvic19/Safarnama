@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
+import { useAuth, AuthProvider } from './hooks/useAuth';
 import LandingPage from './pages/public/LandingPage';
 import GuidePage from './pages/public/GuidePage';
 import DownloadPage from './pages/public/DownloadPage';
@@ -17,11 +17,14 @@ import ItineraryPage from './pages/trip/ItineraryPage';
 import AppShell from './components/layout/AppShell';
 import PlansPage from './pages/trip/PlansPage';
 import SuggestionsPage from './pages/trip/SuggestionsPage';
-import ExportPage from './pages/trip/ExportPage';
+import SharePage from './pages/trip/SharePage';
+import ActivityPage from './pages/trip/ActivityPage';
+import ResourcesPage from './pages/trip/ResourcesPage';
 import TripSummaryPage from './pages/trip/TripSummaryPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
 import TemplatesPage from './pages/TemplatesPage';
+import PublicTripPage from './pages/public/PublicTripPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
 import { useFCM } from './hooks/useFCM';
@@ -52,13 +55,15 @@ function AuthGuard({ children }) {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Routes>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/guide" element={<GuidePage />} />
           <Route path="/download" element={<DownloadPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/t/:id" element={<PublicTripPage />} />
 
           {/* Authenticated Routes wrapped in AppShell */}
           <Route 
@@ -80,7 +85,9 @@ function App() {
             <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
             <Route path="/trips/:id/plans" element={<PlansPage />} />
             <Route path="/trips/:id/suggestions" element={<SuggestionsPage />} />
-            <Route path="/trips/:id/export" element={<ExportPage />} />
+            <Route path="/trips/:id/share" element={<SharePage />} />
+            <Route path="/trips/:id/activity" element={<ActivityPage />} />
+            <Route path="/trips/:id/resources" element={<ResourcesPage />} />
             <Route path="/trips/:id/summary" element={<TripSummaryPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/templates" element={<TemplatesPage />} />
@@ -91,7 +98,8 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <ReloadPrompt />
-      </BrowserRouter>
+        </BrowserRouter>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

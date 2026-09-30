@@ -167,24 +167,36 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 4 - Offline */}
+            <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
+              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
+                <WifiOff className="w-6 h-6 text-zinc-400 mb-4" />
+                <h3 className="font-display text-xl font-semibold text-white mb-2">Works Offline</h3>
+                <p className="font-body text-zinc-400 text-sm leading-relaxed mb-6">
+                  No signal in Spiti Valley? No problem. Log expenses locally. An amber banner keeps you safe until you reconnect and sync.
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 5 - Democracy & Vaults */}
             <div className="lg:col-span-2 p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
               <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col md:flex-row gap-6 items-center">
                 <div className="flex-1">
-                  <WifiOff className="w-6 h-6 text-zinc-400 mb-4" />
-                  <h3 className="font-display text-xl font-semibold text-white mb-2">Works Offline</h3>
+                  <Star className="w-6 h-6 text-pink-400 mb-4" />
+                  <h3 className="font-display text-xl font-semibold text-white mb-2">Democracy & Vaults</h3>
                   <p className="font-body text-zinc-400 text-sm leading-relaxed">
-                    No signal in the mountains? No problem. Safarnama is a Progressive Web App that works completely offline. Log expenses locally and they'll sync securely the moment you reconnect.
+                    Stop arguing in group chats. Let members upvote itinerary suggestions, and store all your shared flight PDFs and Airbnb codes in a centralized Trip Vault.
                   </p>
                 </div>
-                <div className="w-full md:w-48 h-24 bg-zinc-900 rounded-xl border border-white/5 flex items-center justify-center">
-                  <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                    <CheckCircle2 className="w-4 h-4" /> Sync pending (3)
+                <div className="w-full md:w-48 h-24 bg-zinc-900 rounded-xl border border-white/5 flex flex-col items-center justify-center p-3">
+                  <div className="text-xs text-zinc-500 mb-2">Vote on Baga Beach</div>
+                  <div className="flex gap-2">
+                     <div className="px-3 py-1 bg-pink-500/10 text-pink-400 rounded text-xs font-medium">👍 4 Votes</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Feature 5 - Map */}
+            {/* Feature 6 - Map */}
             <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
               <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
                 <MapIcon className="w-6 h-6 text-emerald-400 mb-4" />
@@ -192,6 +204,29 @@ export default function LandingPage() {
                 <p className="font-body text-zinc-400 text-sm leading-relaxed">
                   Plan stops, calculate distances, and build a day-by-day visual timeline of your adventure.
                 </p>
+              </div>
+            </div>
+
+            {/* Feature 7 - Kaptan Mode (Offline Members) */}
+            <div className="lg:col-span-2 p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
+              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col md:flex-row gap-6 items-center">
+                <div className="flex-1">
+                  <Crown className="w-6 h-6 text-amber-500 mb-4" />
+                  <h3 className="font-display text-xl font-semibold text-white mb-2">Kaptan Mode</h3>
+                  <p className="font-body text-zinc-400 text-sm leading-relaxed">
+                    Don't want to force 6 lazy friends to download the app? You don't have to. Add them as "Offline Members", log their expenses on their behalf, and send them a 1-tap UPI settlement link at the end of the trip.
+                  </p>
+                </div>
+                <div className="w-full md:w-48 h-24 bg-zinc-900 rounded-xl border border-white/5 flex flex-col justify-center p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                     <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">S</div>
+                     <span className="text-xs text-zinc-300">Shikhar (Offline)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                     <span className="text-zinc-500">Balance</span>
+                     <span className="text-rose-400 font-mono">-₹4,500</span>
+                  </div>
+                </div>
               </div>
             </div>
 

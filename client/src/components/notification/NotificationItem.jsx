@@ -7,9 +7,11 @@ const ICON_MAP = {
   SYSTEM: { icon: AlertCircle, color: 'text-zinc-400', bg: 'bg-zinc-500/10' },
 };
 
-function timeAgo(date) {
-  if (!date) return '';
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+function timeAgo(ts) {
+  if (!ts) return '';
+  const date = ts?.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(date.getTime())) return '';
+  const seconds = Math.floor((new Date() - date) / 1000);
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + "y ago";
   interval = seconds / 2592000;

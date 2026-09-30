@@ -9,7 +9,8 @@ import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import LocationPicker from '../../components/itinerary/LocationPicker';
-import { suggestionService } from '../../services/suggestionService';
+import { collection, query, orderBy, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
+import { ThumbsUp } from 'lucide-react';
 
 export default function SuggestionsPage() {
   const { id } = useParams();
@@ -35,8 +36,17 @@ export default function SuggestionsPage() {
       }
     });
 
-    const unsubSugg = suggestionService.subscribeToSuggestions(id, (data) => {
-      setSuggestions(data);
+    const q = query(collection(db, 'trips', id, 'suggestions'), orderBy('created_at', 'desc'));
+    const unsubSugg = onSnapshot(q, (snap) => {
+      const fetched = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // Sort by upvotes length descending, then by created_at descending
+      fetched.sort((a, b) => {
+        const aVotes = a.upvotes?.length || 0;
+        const bVotes = b.upvotes?.length || 0;
+        if (aVotes !== bVotes) return bVotes - aVotes;
+        return (b.created_at?.toMillis?.() || 0) - (a.created_at?.toMillis?.() || 0);
+      });
+      setSuggestions(fetched);
       setLoading(false);
     });
     
@@ -59,12 +69,14 @@ export default function SuggestionsPage() {
     
     setSubmitting(true);
     try {
-      await suggestionService.addSuggestion(id, {
-        placeName: finalPlaceName,
+      await addDoc(collection(db, 'trips', id, 'suggestions'), {
+        place_name: finalPlaceName,
         lat: isManual ? null : (newLocation.lat || null),
         lng: isManual ? null : (newLocation.lng || null),
-        userId: user.uid,
-        userName: user.displayName || 'Traveler',
+        created_by: user.uid,
+        created_by_name: user.displayName || 'Traveler',
+        upvotes: [user.uid],
+        created_at: serverTimestamp(),
       });
       setNewLocation({ place_name: '', lat: '', lng: '' });
       setManualText('');
@@ -80,6 +92,18 @@ export default function SuggestionsPage() {
   const isUrl = (text) => {
     if (!text) return false;
     try { return Boolean(new URL(text)); } catch { return false; }
+  };
+
+  const toggleUpvote = async (sugg) => {
+    const suggRef = doc(db, 'trips', id, 'suggestions', sugg.id);
+    const hasVoted = sugg.upvotes?.includes(user.uid);
+    try {
+      await updateDoc(suggRef, {
+        upvotes: hasVoted ? arrayRemove(user.uid) : arrayUnion(user.uid)
+      });
+    } catch (e) {
+      toast.error('Failed to update vote');
+    }
   };
 
   if (loading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading suggestions...</div>;
@@ -129,16 +153,27 @@ export default function SuggestionsPage() {
                       </div>
                     )}
                   </div>
-                  {isKaptan && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-xs shrink-0 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary" 
-                      onClick={() => navigate(`/trips/${id}/itinerary`, { state: { prefillSuggestion: { place_name: placeText, lat: s.lat || '', lng: s.lng || '' } } })}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleUpvote(s)}
+                      className={`gap-1.5 px-2 h-8 ${s.upvotes?.includes(user.uid) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}`}
                     >
-                      <Plus className="w-3 h-3 mr-1" /> Add to Itinerary
+                      <ThumbsUp className={`w-3.5 h-3.5 ${s.upvotes?.includes(user.uid) ? 'fill-primary' : ''}`} />
+                      <span className="text-xs font-semibold">{s.upvotes?.length || 0}</span>
                     </Button>
-                  )}
+                    {isKaptan && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs h-8 bg-white/5 text-foreground hover:bg-primary/20 hover:text-primary" 
+                        onClick={() => navigate(`/trips/${id}/itinerary`, { state: { prefillSuggestion: { place_name: placeText, lat: s.lat || '', lng: s.lng || '' } } })}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Add
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

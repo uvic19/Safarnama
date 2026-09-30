@@ -1,73 +1,68 @@
 # Safarnama 🌍
 
-Safarnama is a clean, modern, and utility-first travel management and expense sharing application. It is designed to help you organize trips, split expenses seamlessly, and keep track of your travel memories.
+Safarnama is a utility-first travel management, itinerary planning, and expense sharing application. Built with a native-first architecture on React and Firebase, it emphasizes a calm, intent-driven user experience and cuts out unnecessary abstractions for maximum performance.
 
-Built with an emphasis on a calm, intent-driven user experience, Safarnama features a minimalist dark-mode default interface inspired by modern design trends.
+## Core Features ✨
 
-## Features ✨
-
-- **Travel Management:** Organize your trips, itineraries, and travel plans in one place.
-- **Expense Sharing:** Easily track group expenses, split costs, and settle balances.
-- **Modern UI/UX:** A pristine dark-themed interface built with Tailwind CSS, utilizing a Monochrome Pro aesthetic.
-- **Real-time Sync:** Powered by Firebase (Auth & Firestore) for real-time updates and seamless data flow.
-- **Responsive Design:** Works flawlessly across desktop, tablet, and mobile devices.
+- **Trip Modes:** Support for Solo trips, fully collaborative Group trips, and Kaptan-managed trips.
+- **Smart Settlements:** Real-time expense tracking with an optimized debt simplification algorithm and integrated UPI payment flows.
+- **Itinerary & Mapping:** Interactive itinerary builder with location tagging (Maplibre-GL).
+- **Group Planning:** Suggestion board and voting mechanism to decide on trip plans democratically.
+- **Push Notifications:** Integrated Firebase Cloud Messaging (FCM) to keep group members updated.
+- **Progressive Web App & TWA:** Fully installable as a PWA and wrapped as a Trusted Web Activity (TWA) for the Google Play Store.
 
 ## Tech Stack 🛠️
 
-- **Frontend:** React, Vite, Tailwind CSS
-- **Backend as a Service (BaaS):** Firebase (Authentication, Firestore, Hosting)
-- **Icons:** Lucide React
+- **Frontend:** React, Vite, React Router
+- **Styling:** Tailwind CSS (v4), shadcn/ui, Lucide React
+- **Backend/Database:** Firebase (Auth, Firestore, Cloud Messaging)
+- **Hosting:** Netlify
+- **Architecture:** Native Firebase SDK integration. No redundant store wrappers (like Zustand) or service layers—direct data flows via React Context and Hooks.
 
 ## Repository Structure 📂
 
-- **`client/`**: Contains the frontend application. See the [Client README](client/README.md) for detailed setup and development instructions.
+- **`client/`**: The entire frontend application and PWA/TWA configuration.
+- **`firestore.rules`**: Security rules protecting the Firestore database.
 
-*(Note: Safarnama uses a serverless architecture with Firebase, meaning all backend logic is handled via Firebase security rules and client-side integrations.)*
+*(Note: Safarnama uses a serverless architecture. All backend logic is enforced securely via Firestore Rules.)*
 
 ## Getting Started 🚀
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v16 or higher recommended)
-- A [Firebase](https://firebase.google.com/) account for backend services
+- Node.js (v18 or higher recommended)
+- A Firebase project with Auth, Firestore, and FCM enabled.
 
 ### Installation
 
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/uvic19/Safarnama.git
-   cd Safarnama
+   cd Safarnama/client
    ```
 
 2. **Install dependencies:**
    ```bash
-   cd client
    npm install
    ```
 
 3. **Set up Firebase Environment Variables:**
-   Create a `.env` file in the `client/` directory and configure your Firebase credentials. See the [Client Setup Instructions](client/README.md#3-firebase-configuration) for more details.
+   Create a `.env` file in the `client/` directory and add your Firebase config variables (see `.env.example`).
 
 4. **Start the Development Server:**
    ```bash
    npm run dev
    ```
 
+## Android (TWA) Build
+
+Safarnama uses Google's `bubblewrap-cli` to generate a lightweight Android APK. 
+**Important:** Because TWA dynamically loads the live web application from your hosting URL, you **do not** need to rebuild the APK when you make frontend code changes. You only need to rebuild the APK if you change the app icon, theme colors, or the app name in `twa-manifest.json`.
+
 ## Design System 🎨
 
 Safarnama employs a "Monochrome Pro" theme focusing on:
-- **Calm UX:** Reduced visual noise with generous whitespace.
-- **Typography:** `Syne` for distinctive headings and `DM Sans` for highly legible body text.
-- **Color Palette:** Deep Zinc backgrounds with subtle translucent borders and crisp white accents.
-
-## Contributing 🤝
-
-Contributions are welcome! If you'd like to improve the app, please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- **Calm UX:** Deep Zinc backgrounds (`#09090B`) with subtle translucent borders (`white/[0.06]`).
+- **Typography:** Display fonts for distinctive headings and highly legible body text.
 
 ## License 📄
 

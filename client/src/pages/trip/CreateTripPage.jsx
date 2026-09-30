@@ -77,7 +77,7 @@ export default function CreateTripPage() {
       <div className="p-0 md:p-[2px] md:rounded-2xl bg-transparent md:bg-white/[0.03] ring-0 md:ring-1 md:ring-white/[0.06] mb-6">
         <div className="md:rounded-[calc(1.5rem-2px)] bg-transparent md:bg-[#18181B] px-4 py-2 md:p-6 md:shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] min-h-[320px]">
           <div key={step} className="animate-fade-up">
-            {step === 1 && <Step1Basics data={formData} updateData={updateData} />}
+            {step === 1 && <Step1Basics data={formData} updateData={updateData} template={template} />}
             {step === 2 && <Step2Budget data={formData} updateData={updateData} />}
             {step === 3 && <Step3Members data={formData} updateData={updateData} />}
             {step === 4 && <Step4Review data={formData} />}

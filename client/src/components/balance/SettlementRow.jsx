@@ -1,7 +1,7 @@
 import { Check, Clock, Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
-import { format } from 'date-fns';
+
 
 export default function SettlementRow({ 
   settlement, 
@@ -17,10 +17,12 @@ export default function SettlementRow({
   const isPending = status === 'PENDING';
 
   // Format the date if available
+  const formatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   const dateStr = confirmed_at 
-    ? format(confirmed_at.toDate(), 'MMM d, h:mm a')
+    ? formatter.format(confirmed_at.toDate())
     : created_at 
-      ? format(created_at.toDate(), 'MMM d, h:mm a') 
+      ? formatter.format(created_at.toDate()) 
+
       : 'Just now';
 
   return (

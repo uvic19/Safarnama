@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, KeyRound, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
-import { tripService } from '../../services/tripService';
+import { doc, collection, query, where, limit, getDocs, updateDoc, arrayUnion, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -18,11 +19,44 @@ export default function JoinTripPage() {
     event.preventDefault();
     if (!user) return;
 
+    const formattedCode = code.trim().toUpperCase();
+    if (!formattedCode) return;
+
     setJoining(true);
     try {
-      const tripId = await tripService.joinTripByInviteCode(code, user);
+      const tripsQuery = query(
+        collection(db, 'trips'),
+        where('invite_code', '==', formattedCode),
+        where('mode', '==', 'GROUP_FULL'),
+        limit(1)
+      );
+      const snap = await getDocs(tripsQuery);
+      
+      if (snap.empty) {
+        throw new Error('No trip found for this invite code');
+      }
+
+      const tripDoc = snap.docs[0];
+      const trip = tripDoc.data();
+
+      if (!trip.member_ids?.includes(user.uid)) {
+        await updateDoc(doc(db, 'trips', tripDoc.id), {
+          member_ids: arrayUnion(user.uid),
+        });
+
+        await setDoc(doc(db, 'trips', tripDoc.id, 'members', user.uid), {
+          user_id: user.uid,
+          display_name: user.displayName || user.email || 'Member',
+          email: user.email || null,
+          role: 'MEMBER',
+          joined_at: serverTimestamp(),
+          is_active: true,
+          upi_id: null,
+        });
+      }
+
       toast.success('Joined trip');
-      navigate(`/trips/${tripId}`);
+      navigate(`/trips/${tripDoc.id}`);
     } catch (error) {
       console.error('Failed to join trip', error);
       toast.error(error.message || 'Could not join trip');

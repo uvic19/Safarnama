@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { expenseService } from '../services/expenseService';
+import { useAuth } from './useAuth';
 
 /**
  * Shared hook that provides expense edit/delete handlers.
@@ -10,6 +11,7 @@ import { expenseService } from '../services/expenseService';
  * @returns {{ handleEditExpense, handleDeleteExpense, handleConfirmDelete, expenseToEdit, expenseToDelete, setExpenseToDelete }}
  */
 export function useExpenseActions(tripId) {
+  const { user } = useAuth();
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
 
@@ -23,10 +25,10 @@ export function useExpenseActions(tripId) {
 
   const handleConfirmDelete = async () => {
     if (!expenseToDelete) return;
-    const expenseId = expenseToDelete.id;
+    const expense = expenseToDelete;
     setExpenseToDelete(null);
     try {
-      await expenseService.deleteExpense(tripId, expenseId);
+      await expenseService.deleteExpense(tripId, expense, user?.displayName || 'A member');
       toast.success('Expense deleted!');
     } catch (e) {
       toast.error('Failed to delete expense');

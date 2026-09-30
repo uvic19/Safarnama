@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Receipt, Wallet, Clock, CalendarDays, Map, Edit3, MessageSquare, Download } from 'lucide-react';
+import { ArrowLeft, Plus, Receipt, Wallet, Clock, CalendarDays, Map, Edit3, MessageSquare, Share2, Activity, Link as LinkIcon } from 'lucide-react';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
@@ -59,10 +59,10 @@ export default function TripOverviewPage() {
 
   const handleConfirmDelete = async () => {
     if (!expenseToDelete) return;
-    const expenseId = expenseToDelete.id;
+    const expense = expenseToDelete;
     setExpenseToDelete(null);
     try {
-      await expenseService.deleteExpense(id, expenseId);
+      await expenseService.deleteExpense(id, expense, user?.displayName || 'A member');
       toast.success('Expense deleted!');
     } catch (e) {
       toast.error('Failed to delete expense');
@@ -269,11 +269,25 @@ export default function TripOverviewPage() {
             <span className="text-sm font-medium">Suggestions</span>
           </Link>
           <Link
-            to={`/trips/${id}/export`}
+            to={`/trips/${id}/share`}
             className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.08] transition-all duration-150"
           >
-            <Download className="w-5 h-5" />
-            <span className="text-sm font-medium">Export</span>
+            <Share2 className="w-5 h-5" />
+            <span className="text-sm font-medium">Share</span>
+          </Link>
+          <Link
+            to={`/trips/${id}/activity`}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.08] transition-all duration-150"
+          >
+            <Activity className="w-5 h-5" />
+            <span className="text-sm font-medium">Activity</span>
+          </Link>
+          <Link
+            to={`/trips/${id}/resources`}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08] text-muted-foreground hover:text-foreground hover:bg-white/[0.08] transition-all duration-150"
+          >
+            <LinkIcon className="w-5 h-5" />
+            <span className="text-sm font-medium">Resources</span>
           </Link>
         </div>
 

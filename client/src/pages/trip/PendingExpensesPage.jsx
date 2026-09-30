@@ -13,6 +13,7 @@ import { useAuth } from '../../hooks/useAuth';
 function timeAgo(ts) {
   if (!ts) return '';
   const date = ts?.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(date.getTime())) return '';
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'just now';

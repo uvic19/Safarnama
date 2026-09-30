@@ -157,9 +157,16 @@ export const expenseService = {
     await updateDoc(ref, { status: 'REJECTED', rejection_reason: reason });
   },
 
-  /** Delete an expense permanently. */
-  async deleteExpense(tripId, expenseId) {
-    const ref = doc(db, 'trips', tripId, 'expenses', expenseId);
+  /** Delete an expense permanently and log it. */
+  async deleteExpense(tripId, expense, userName = 'Someone') {
+    const ref = doc(db, 'trips', tripId, 'expenses', expense.id);
     await deleteDoc(ref);
+    try {
+      await addDoc(collection(db, 'trips', tripId, 'activity_log'), {
+        type: 'EXPENSE_DELETED',
+        message: `${userName} deleted expense: ${expense.description} (${expense.currency || 'INR'} ${expense.amount})`,
+        created_at: serverTimestamp(),
+      });
+    } catch(e) { console.error('Failed to log activity', e); }
   },
 };

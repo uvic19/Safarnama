@@ -1,6 +1,5 @@
 import { db } from '../lib/firebase';
-import { arrayUnion, collection, addDoc, doc, getDocs, limit, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
-import { userService } from './userService';
+import { arrayUnion, collection, addDoc, doc, getDoc, getDocs, limit, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { notificationService } from './notificationService';
 
 export const tripService = {
@@ -35,7 +34,8 @@ export const tripService = {
       const docRef = await addDoc(tripsRef, payload);
 
       // Add creator as KAPTAN in members subcollection
-      const userProfile = await userService.getUserProfile(userId);
+      const userProfileSnap = await getDoc(doc(db, 'users', userId));
+      const userProfile = userProfileSnap.exists() ? userProfileSnap.data() : null;
       const memberRef = doc(db, 'trips', docRef.id, 'members', userId);
       await setDoc(memberRef, {
         user_id: userId,
@@ -156,7 +156,8 @@ export const tripService = {
       member_ids: arrayUnion(user.uid),
     });
 
-    const userProfile = await userService.getUserProfile(user.uid);
+    const userProfileSnap = await getDoc(doc(db, 'users', user.uid));
+    const userProfile = userProfileSnap.exists() ? userProfileSnap.data() : null;
     await setDoc(doc(db, 'trips', tripDoc.id, 'members', user.uid), {
       user_id: user.uid,
       display_name: user.displayName || user.email || 'Member',

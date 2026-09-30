@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, Camera, Compass, Dumbbell, Lock, MapPinned, Plus, UtensilsCrossed, Unlock, Hotel } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../../lib/firebase';
@@ -13,7 +13,6 @@ import LocationPicker from '../../components/itinerary/LocationPicker';
 import MapView from '../../components/itinerary/MapView';
 import TimelineDay from '../../components/itinerary/TimelineDay';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { itineraryService } from '../../services/itineraryService';
 
 const EMPTY_FORM = {
   stop_type: 'TOURIST',
@@ -103,17 +102,21 @@ export default function ItineraryPage() {
         const tripDoc = await getDoc(doc(db, 'trips', id));
         if (tripDoc.exists()) setTrip({ id: tripDoc.id, ...tripDoc.data() });
 
-        unsubStops = itineraryService.subscribeToStops(
-          id,
-          (data) => {
-            setStops(data);
+        const q = query(
+          collection(db, 'trips', id, 'itinerary'),
+          orderBy('order_index', 'asc')
+        );
+        unsubStops = onSnapshot(
+          q,
+          (snap) => {
+            setStops(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
             setLoading(false);
           },
           (error) => {
             console.error('[ItineraryPage] Failed to listen to stops:', error);
             toast.error('No permission to load itinerary stops');
             setLoading(false);
-          },
+          }
         );
       } catch (error) {
         console.error('[ItineraryPage] Failed to load itinerary:', error);
@@ -231,9 +234,16 @@ export default function ItineraryPage() {
       };
 
       if (editingStopId) {
-        await itineraryService.updateStop(id, editingStopId, payload);
+        await updateDoc(doc(db, 'trips', id, 'itinerary', editingStopId), {
+          ...payload,
+          updated_at: serverTimestamp(),
+        });
       } else {
-        await itineraryService.addStop(id, payload);
+        await addDoc(collection(db, 'trips', id, 'itinerary'), {
+          ...payload,
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+        });
       }
 
       setDialogOpen(false);
@@ -252,7 +262,7 @@ export default function ItineraryPage() {
     if (!isKaptan || !stopToDelete) return;
 
     try {
-      await itineraryService.deleteStop(id, stopToDelete.id);
+      await deleteDoc(doc(db, 'trips', id, 'itinerary', stopToDelete.id));
       setStopToDelete(null);
       toast.success('Stop deleted');
     } catch (error) {
@@ -266,7 +276,7 @@ export default function ItineraryPage() {
 
     try {
       const nextValue = !trip.itinerary_locked;
-      await itineraryService.setLocked(id, nextValue);
+      await updateDoc(doc(db, 'trips', id), { itinerary_locked: nextValue });
       setTrip((current) => ({ ...current, itinerary_locked: nextValue }));
       toast.success(nextValue ? 'Itinerary locked' : 'Itinerary unlocked');
     } catch (error) {

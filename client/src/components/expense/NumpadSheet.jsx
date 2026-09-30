@@ -139,7 +139,7 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
       }
       
       finalForm.exchange_rate = rate;
-      finalForm.amount_in_base = Number(form.amount) * rate;
+      finalForm.amount_in_base = Math.round(Number(form.amount) * rate);
 
       if (expenseToEdit) {
         await expenseService.updateExpense(tripId, expenseToEdit.id, finalForm, baseCurrency);
@@ -183,7 +183,7 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
     setShowDeleteConfirm(false);
     setSubmitting(true);
     try {
-      await expenseService.deleteExpense(tripId, expenseToEdit.id);
+      await expenseService.deleteExpense(tripId, expenseToEdit, user?.displayName || 'A member');
       toast.success('Expense deleted!');
       onAdded?.();
       handleClose();

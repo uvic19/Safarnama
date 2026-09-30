@@ -57,10 +57,10 @@ export default function ExpenseListPage() {
 
   const handleConfirmDelete = async () => {
     if (!expenseToDelete) return;
-    const expenseId = expenseToDelete.id;
+    const expense = expenseToDelete;
     setExpenseToDelete(null);
     try {
-      await expenseService.deleteExpense(id, expenseId);
+      await expenseService.deleteExpense(id, expense, user?.displayName || 'A member');
       toast.success('Expense deleted!');
     } catch (e) {
       toast.error('Failed to delete expense');

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "tw-animate-css";
+
 @import "shadcn/tailwind.css";
 
 @theme {
@@ -55,6 +55,20 @@
   --radius-xl: 1.25rem;
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
+
+  /* Animations */
+  --animate-fade-up: fade-up 0.5s var(--ease-out-expo) forwards;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @layer base {
@@ -139,5 +153,41 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: 0;
+  }
+  
+  /* Hide scrollbars during print */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* The visibility trick to only print the specific container */
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-only, .print-only * {
+    visibility: visible;
+  }
+  
+  .print-only {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
 }
 

@@ -11,7 +11,10 @@ import {
   BookOpen,
   Settings,
   Download,
-  Share2
+  Share2,
+  MessageSquare,
+  Link as LinkIcon,
+  Crown
 } from 'lucide-react';
 
 export default function InAppGuidePage() {
@@ -88,14 +91,58 @@ export default function InAppGuidePage() {
 
       <section className="space-y-4">
         <h2 className="font-display text-xl font-semibold text-white flex items-center gap-2 mb-4">
+          <MessageSquare className="w-5 h-5 text-pink-400" /> Group Democracy (Suggestions)
+        </h2>
+        <div className="p-4 rounded-2xl bg-white/[0.03] ring-1 ring-white/5 space-y-3">
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Stop arguing in WhatsApp groups. Use the <strong>Suggestions</strong> tab to propose places to visit.
+          </p>
+          <ul className="space-y-2 text-sm text-zinc-400 list-disc list-inside ml-2">
+            <li>Drop a Google Maps link or type a place name.</li>
+            <li>Everyone in the trip can upvote their favorites.</li>
+            <li>The <strong>Kaptan</strong> can instantly promote top-voted suggestions into the official Itinerary.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-xl font-semibold text-white flex items-center gap-2 mb-4">
+          <LinkIcon className="w-5 h-5 text-indigo-400" /> The Trip Vault (Resources)
+        </h2>
+        <div className="p-4 rounded-2xl bg-white/[0.03] ring-1 ring-white/5 space-y-3">
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Never ask "who has the flight tickets?" again. Use the <strong>Resources</strong> tab as your group's vault.
+          </p>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            Paste links to Airbnb bookings, flight PDFs (via GDrive), or blog posts. The app automatically categorizes them so everyone has access to important documents in one place.
+          </p>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-xl font-semibold text-white flex items-center gap-2 mb-4">
+          <Crown className="w-5 h-5 text-amber-500" /> Kaptan Mode
+        </h2>
+        <div className="p-4 rounded-2xl bg-white/[0.03] ring-1 ring-white/5 space-y-3">
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Don't want to force 5 people to download the app? 
+          </p>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            The Kaptan (trip creator) can add "Offline Members" to the trip. The Kaptan logs all expenses on their behalf, tracks their balances, and settles up for them—while they just enjoy the vacation.
+          </p>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-xl font-semibold text-white flex items-center gap-2 mb-4">
           <WifiOff className="w-5 h-5 text-zinc-400" /> Using Safarnama Offline
         </h2>
         <div className="p-4 rounded-2xl bg-white/[0.03] ring-1 ring-white/5 space-y-3">
           <p className="text-sm text-zinc-300 leading-relaxed">
-            Since you have the App installed, it acts as an offline-first database.
+            Safarnama is an offline-first app. If you lose internet on a trek, you can still add expenses.
           </p>
           <p className="text-sm text-zinc-400 leading-relaxed">
-            If you lose internet connection on a trek, you can still add expenses. A small red <WifiOff className="w-3 h-3 inline text-red-400" /> icon will appear in the top bar. The moment you reconnect to Wi-Fi or cellular data, all your pending logs will sync to the cloud and notify your friends!
+            A bright amber warning banner will appear telling you that you are offline. All your data is saved locally to your device. <strong>Do not close the app!</strong> The moment you reconnect to Wi-Fi, the banner disappears and everything syncs to your group automatically.
           </p>
         </div>
       </section>
@@ -114,8 +161,8 @@ export default function InAppGuidePage() {
           <div className="flex gap-3 items-start p-3 rounded-xl bg-white/5">
             <Download className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
             <div>
-              <div className="text-sm font-medium text-white mb-1">Export to PDF</div>
-              <div className="text-xs text-zinc-400">At the end of the trip, go to the Export tab to generate a beautifully formatted PDF report of all your expenses.</div>
+              <div className="text-sm font-medium text-white mb-1">Public Share Links</div>
+              <div className="text-xs text-zinc-400">Want to show off your itinerary? Go to the Share tab to make your trip public. Anyone with the link can view it or clone it as a template!</div>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { expenseService } from '../../services/expenseService';
-import { settlementService } from '../../services/settlementService';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { computeBalances } from '../../lib/calculations';
 import { Button } from '../../components/ui/button';
 import BudgetProgressBar from '../../components/balance/BudgetProgressBar';
@@ -39,7 +39,8 @@ export default function BalancePage() {
         setMembers(m);
 
         unsubExpenses = expenseService.subscribeToExpenses(id, (exp) => setExpenses(exp));
-        unsubSettlements = settlementService.subscribeToSettlements(id, (setl) => setSettlements(setl));
+        const q = query(collection(db, 'trips', id, 'settlements'), orderBy('created_at', 'desc'));
+        unsubSettlements = onSnapshot(q, (snap) => setSettlements(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
       } catch (e) {
         console.error('Failed to load balance page data', e);
       } finally {

@@ -11,7 +11,7 @@ export default function Footer() {
           </div>
           
           <div className="flex items-center gap-6">
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="font-body text-sm text-zinc-400 hover:text-white transition-colors">GitHub</a>
+            <a href="https://github.com/uvic19/Safarnama" target="_blank" rel="noreferrer" className="font-body text-sm text-zinc-400 hover:text-white transition-colors">GitHub</a>
             <Link to="/privacy" className="font-body text-sm text-zinc-400 hover:text-white transition-colors">Privacy</Link>
             <a href="mailto:hello@kridleapps.tech" className="font-body text-sm text-zinc-400 hover:text-white transition-colors">Contact</a>
           </div>

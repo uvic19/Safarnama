@@ -4,14 +4,14 @@ import { TEMPLATES } from '../../lib/templates';
 import { tripService } from '../../services/tripService';
 import { useAuth } from '../../hooks/useAuth';
 import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { KeyRound, Plus, Wallet } from 'lucide-react';
-import { userService } from '../../services/userService';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -22,6 +22,9 @@ export default function DashboardPage() {
   const [showUpiPrompt, setShowUpiPrompt] = useState(false);
   const [upiIdInput, setUpiIdInput] = useState('');
   const [savingUpi, setSavingUpi] = useState(false);
+
+  // Delete Trip State
+  const [tripToDelete, setTripToDelete] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -35,7 +38,8 @@ export default function DashboardPage() {
         const loadedTrips = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
         // Fetch profile once — reuse for both seeding check and UPI prompt
-        const profile = await userService.getUserProfile(user.uid);
+        const profileSnap = await getDoc(doc(db, 'users', user.uid));
+        const profile = profileSnap.exists() ? profileSnap.data() : null;
 
         // Auto-seed default trip if they have no trips and haven't been seeded yet
         if (loadedTrips.length === 0 && !profile?.has_seeded_default_trip) {
@@ -56,7 +60,7 @@ export default function DashboardPage() {
               template_itinerary: goaTemplate.itinerary
             }, user.uid);
 
-            await userService.updateUserProfile(user.uid, { has_seeded_default_trip: true });
+            await setDoc(doc(db, 'users', user.uid), { has_seeded_default_trip: true }, { merge: true });
 
             // Refetch after seeding
             const newSnap = await getDocs(q);
@@ -85,7 +89,7 @@ export default function DashboardPage() {
   const handleSaveUpi = async () => {
     setSavingUpi(true);
     try {
-      await userService.updateUserProfile(user.uid, { upi_id: upiIdInput, upi_prompt_dismissed: true });
+      await setDoc(doc(db, 'users', user.uid), { upi_id: upiIdInput, upi_prompt_dismissed: true }, { merge: true });
       setShowUpiPrompt(false);
     } catch (err) {
       console.error('[DashboardPage] Failed to save UPI ID:', err);
@@ -97,11 +101,30 @@ export default function DashboardPage() {
 
   const handleDismissUpi = async () => {
     try {
-      await userService.updateUserProfile(user.uid, { upi_prompt_dismissed: true });
+      await setDoc(doc(db, 'users', user.uid), { upi_prompt_dismissed: true }, { merge: true });
       setShowUpiPrompt(false);
     } catch (err) {
       console.error(err);
       setShowUpiPrompt(false);
+    }
+  };
+
+  const confirmDeleteTrip = async () => {
+    if (!tripToDelete) return;
+    try {
+      if (tripToDelete.isKaptan) {
+        await tripService.deleteTrip(tripToDelete.id);
+        toast.success('Trip deleted');
+      } else {
+        await tripService.leaveTrip(tripToDelete.id, user.uid);
+        toast.success('Left trip successfully');
+      }
+      setTrips(prev => prev.filter(t => t.id !== tripToDelete.id));
+    } catch (error) {
+      console.error('Failed to remove trip:', error);
+      toast.error('Failed to remove trip');
+    } finally {
+      setTripToDelete(null);
     }
   };
 
@@ -121,7 +144,12 @@ export default function DashboardPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {trips.map((trip) => (
-            <TripCard key={trip.id} {...trip} />
+            <TripCard 
+              key={trip.id} 
+              {...trip} 
+              isKaptan={trip.kaptan_id === user.uid}
+              onDelete={(id, name) => setTripToDelete({ id, name, isKaptan: trip.kaptan_id === user.uid })} 
+            />
           ))}
 
           {/* Create New Trip Card */}
@@ -178,6 +206,17 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!tripToDelete}
+        onOpenChange={(open) => !open && setTripToDelete(null)}
+        title={tripToDelete?.isKaptan ? "Delete Trip" : "Leave Trip"}
+        description={tripToDelete?.isKaptan 
+          ? `Are you sure you want to delete "${tripToDelete?.name}"? This action cannot be undone.`
+          : `Are you sure you want to leave "${tripToDelete?.name}"? You will lose access to it.`}
+        confirmText={tripToDelete?.isKaptan ? "Yes, delete it" : "Yes, leave trip"}
+        onConfirm={confirmDeleteTrip}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, LogOut, User as UserIcon, WifiOff, Info } from 'lucide-react';
+import { Bell, LogOut, User as UserIcon, CloudOff, Info } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -59,8 +59,9 @@ export default function TopBar() {
       
       <div className="flex items-center gap-4">
         {!isOnline && (
-          <div className="flex items-center justify-center p-1.5 rounded-full bg-rose-500/10" title="You are offline. Changes will sync later.">
-            <WifiOff className="w-4 h-4 text-rose-500" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20" title="Changes saved locally. Waiting for network.">
+            <CloudOff className="w-4 h-4 text-amber-500" />
+            <span className="text-[10px] font-medium text-amber-500 hidden md:block">Offline</span>
           </div>
         )}
         <Button 

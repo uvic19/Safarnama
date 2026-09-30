@@ -89,7 +89,13 @@ export default function StopCard({ stop, index, canEdit = false, onEdit, onDelet
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Detail icon={MapPin} label="Coordinates">{coordinates}</Detail>
+              <Detail icon={MapPin} label="Coordinates">
+                {coordinates && (
+                  <a href={`https://maps.google.com/?q=${lat},${lng}`} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1 w-fit">
+                    Open in Maps <ExternalLink className="w-3 h-3"/>
+                  </a>
+                )}
+              </Detail>
               <Detail icon={TrainFront} label="Transport">{stop.transport_details}</Detail>
               <Detail icon={Hotel} label="Stay">{stayDetails}</Detail>
               <Detail icon={StickyNote} label="Notes">{stop.notes}</Detail>

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit3, Send, CheckCircle2, ShieldAlert } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { expenseService } from '../../services/expenseService';
-import { settlementService } from '../../services/settlementService';
 import { computeBalances, simplifyDebts } from '../../lib/calculations';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -49,7 +48,8 @@ export default function SettlementPage() {
         if (currentUserMember?.upi_id) setMyUpiId(currentUserMember.upi_id);
 
         unsubExpenses = expenseService.subscribeToExpenses(id, (exp) => setExpenses(exp));
-        unsubSettlements = settlementService.subscribeToSettlements(id, (setl) => setSettlements(setl));
+        const q = query(collection(db, 'trips', id, 'settlements'), orderBy('created_at', 'desc'));
+        unsubSettlements = onSnapshot(q, (snap) => setSettlements(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
       } catch (e) {
         console.error('Failed to load settlement page data', e);
       } finally {
@@ -67,7 +67,7 @@ export default function SettlementPage() {
   const handleSaveUpi = async () => {
     setSavingUpi(true);
     try {
-      await settlementService.updateMemberUPI(id, user.uid, myUpiId);
+      await updateDoc(doc(db, 'trips', id, 'members', user.uid), { upi_id: myUpiId });
       // Update local members array so UI reflects immediately without reloading
       setMembers(prev => prev.map(m => m.id === user.uid ? { ...m, upi_id: myUpiId } : m));
       setEditingUpi(false);
@@ -82,14 +82,17 @@ export default function SettlementPage() {
   const handleRecordPayment = async (txn) => {
     const isAutoConfirmed = trip?.mode === 'GROUP_KAPTAN_ONLY';
     try {
-      await settlementService.recordSettlement(id, {
+      await addDoc(collection(db, 'trips', id, 'settlements'), {
         from_id: txn.fromId,
         from_name: txn.fromName,
         to_id: txn.toId,
         to_name: txn.toName,
-        amount: txn.amount,
-        method: isAutoConfirmed ? 'Cash' : 'UPI'
-      }, isAutoConfirmed);
+        amount: Number(txn.amount),
+        method: isAutoConfirmed ? 'Cash' : 'UPI',
+        status: isAutoConfirmed ? 'CONFIRMED' : 'PENDING',
+        created_at: serverTimestamp(),
+        confirmed_at: isAutoConfirmed ? serverTimestamp() : null,
+      });
       toast.success(isAutoConfirmed ? 'Settlement confirmed!' : 'Payment recorded. Waiting for confirmation.');
     } catch (error) {
       toast.error('Failed to record payment');
@@ -98,7 +101,10 @@ export default function SettlementPage() {
 
   const handleConfirmSettlement = async (settlementId) => {
     try {
-      await settlementService.confirmSettlement(id, settlementId);
+      await updateDoc(doc(db, 'trips', id, 'settlements', settlementId), { 
+        status: 'CONFIRMED',
+        confirmed_at: serverTimestamp() 
+      });
       toast.success('Payment confirmed');
     } catch (error) {
       toast.error('Failed to confirm payment');
@@ -107,7 +113,7 @@ export default function SettlementPage() {
 
   const handleDeleteSettlement = async (settlementId) => {
     try {
-      await settlementService.deleteSettlement(id, settlementId);
+      await deleteDoc(doc(db, 'trips', id, 'settlements', settlementId));
       toast.success('Settlement record deleted');
     } catch (error) {
       toast.error('Failed to delete record');

@@ -3,7 +3,7 @@ import { Label } from '../../ui/label';
 import { RadioGroup, RadioGroupItem } from '../../ui/radio-group';
 import { User, Users, ShieldCheck } from 'lucide-react';
 
-export default function Step1Basics({ data, updateData }) {
+export default function Step1Basics({ data, updateData, template }) {
   return (
     <div className="space-y-6">
       <div>
@@ -36,26 +36,48 @@ export default function Step1Basics({ data, updateData }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            {/* Simple date inputs for now, can be upgraded to Calendar later */}
             <Label htmlFor="start_date">Start Date</Label>
             <Input 
               type="date"
               id="start_date" 
               value={data.start_date || ''}
-              onChange={(e) => updateData({ start_date: e.target.value })}
+              onChange={(e) => {
+                const newDate = e.target.value;
+                const updates = { start_date: newDate };
+                if (newDate && template?.duration) {
+                  const d = new Date(newDate);
+                  d.setDate(d.getDate() + (template.duration - 1));
+                  updates.end_date = d.toISOString().split('T')[0];
+                }
+                updateData(updates);
+              }}
               className="font-mono"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="end_date">End Date</Label>
-            <Input 
-              type="date"
-              id="end_date" 
-              value={data.end_date || ''}
-              onChange={(e) => updateData({ end_date: e.target.value })}
-              className="font-mono"
-            />
-          </div>
+          {!template && (
+            <div className="space-y-2">
+              <Label htmlFor="end_date">End Date</Label>
+              <Input 
+                type="date"
+                id="end_date" 
+                value={data.end_date || ''}
+                onChange={(e) => updateData({ end_date: e.target.value })}
+                className="font-mono"
+              />
+            </div>
+          )}
+          {template && (
+            <div className="space-y-2 opacity-60 pointer-events-none">
+              <Label htmlFor="end_date">End Date (Auto-set)</Label>
+              <Input 
+                type="date"
+                id="end_date" 
+                value={data.end_date || ''}
+                readOnly
+                className="font-mono bg-white/[0.02]"
+              />
+            </div>
+          )}
         </div>
 
         <div className="pt-4 space-y-4">

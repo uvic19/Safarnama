@@ -3,7 +3,8 @@ import { Button } from '../components/ui/button';
 import { LogOut, User, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { userService } from '../services/userService';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import UpiEditor from '../components/ui/UpiEditor';
 
 export default function ProfilePage() {
@@ -12,8 +13,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user?.uid) {
-      userService.getUserProfile(user.uid).then((profile) => {
-        if (profile?.upi_id) setGlobalUpiId(profile.upi_id);
+      getDoc(doc(db, 'users', user.uid)).then((snap) => {
+        if (snap.exists() && snap.data()?.upi_id) {
+          setGlobalUpiId(snap.data().upi_id);
+        }
       }).catch((err) => console.error('[ProfilePage] Failed to load profile:', err));
     }
   }, [user]);
@@ -28,7 +31,7 @@ export default function ProfilePage() {
   };
 
   const handleSaveUpi = async (newUpiId) => {
-    await userService.updateUserProfile(user.uid, { upi_id: newUpiId });
+    await setDoc(doc(db, 'users', user.uid), { upi_id: newUpiId }, { merge: true });
     setGlobalUpiId(newUpiId);
     toast.success('UPI ID saved successfully');
   };

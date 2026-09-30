@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import Sidebar from './Sidebar';
+import OfflineBanner from './OfflineBanner';
 
 export default function AppShell() {
   return (
@@ -13,6 +14,7 @@ export default function AppShell() {
 
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
+        <OfflineBanner />
         
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0 scroll-smooth">

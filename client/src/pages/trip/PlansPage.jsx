@@ -10,7 +10,7 @@ import { Input } from '../../components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
 import { Label } from '../../components/ui/label';
 import { toast } from 'sonner';
-import { planService } from '../../services/planService';
+import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 export default function PlansPage() {
   const { id } = useParams();
@@ -35,8 +35,9 @@ export default function PlansPage() {
 
   useEffect(() => {
     if (!id) return;
-    const unsub = planService.subscribeToPlans(id, (data) => {
-      setPlans(data);
+    const q = query(collection(db, 'trips', id, 'plans'), orderBy('created_at', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      setPlans(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
     return unsub;
@@ -45,7 +46,9 @@ export default function PlansPage() {
   const handleVote = async (planId, isVoting) => {
     if (!user) return;
     try {
-      await planService.toggleVote(id, planId, user.uid, isVoting);
+      await updateDoc(doc(db, 'trips', id, 'plans', planId), {
+        voter_ids: isVoting ? arrayUnion(user.uid) : arrayRemove(user.uid),
+      });
     } catch {
       toast.error('Failed to register vote');
     }
@@ -54,7 +57,10 @@ export default function PlansPage() {
   const handleSelectWinner = async (planId) => {
     if (!trip || trip.kaptan_id !== user?.uid) return;
     try {
-      await planService.selectWinner(id, planId, plans.map((p) => p.id));
+      const promises = plans.map((p) =>
+        updateDoc(doc(db, 'trips', id, 'plans', p.id), { is_winner: p.id === planId })
+      );
+      await Promise.all(promises);
       toast.success('Winner selected!');
     } catch {
       toast.error('Failed to select winner');
@@ -68,11 +74,14 @@ export default function PlansPage() {
     }
     setSubmitting(true);
     try {
-      await planService.addPlan(id, {
+      await addDoc(collection(db, 'trips', id, 'plans'), {
         title: newPlan.title,
         description: newPlan.description,
-        estimatedCost: newPlan.estimated_cost,
-        userId: user.uid,
+        estimated_cost: newPlan.estimated_cost ? Number(newPlan.estimated_cost) : null,
+        created_by: user.uid,
+        created_at: serverTimestamp(),
+        voter_ids: [user.uid],
+        is_winner: false,
       });
       setNewPlan({ title: '', description: '', estimated_cost: '' });
       setSheetOpen(false);

@@ -1,4 +1,4 @@
-import { Calendar, Users } from 'lucide-react';
+import { Calendar, Users, Trash2, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function TripCard({
@@ -9,7 +9,9 @@ export default function TripCard({
   end_date,
   member_ids = [],
   mode,
-  status = ''
+  status = '',
+  isKaptan = false,
+  onDelete
 }) {
   // Status colors logic
   const getStatusColor = (status = '') => {
@@ -61,12 +63,27 @@ export default function TripCard({
               <Calendar className="w-4 h-4 text-zinc-500" />
               <span className="font-mono text-xs">{dateText}</span>
             </div>
-            
-            <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg">
-              <Users className="w-3.5 h-3.5 text-zinc-500" />
-              <span className="font-mono text-xs font-medium text-zinc-300">
-                {mode === 'SOLO' ? 'Solo' : `${member_ids?.length || 1}`}
-              </span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-lg">
+                <Users className="w-3.5 h-3.5 text-zinc-500" />
+                <span className="font-mono text-xs font-medium text-zinc-300">
+                  {mode === 'SOLO' ? 'Solo' : `${member_ids?.length || 1}`}
+                </span>
+              </div>
+              
+              {onDelete && (
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDelete(id, name);
+                  }}
+                  className="p-1.5 rounded-lg text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 transition-colors z-10 relative"
+                  title={isKaptan ? "Delete Trip" : "Leave Trip"}
+                >
+                  {isKaptan ? <Trash2 className="w-4 h-4" /> : <LogOut className="w-4 h-4" />}
+                </button>
+              )}
             </div>
           </div>
         </div>

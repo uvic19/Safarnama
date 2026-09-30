@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, MapPin, CalendarDays, Wallet, Download } from 
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Button } from '../../components/ui/button';
-import { generateExpensePDF } from '../../lib/pdfExport';
+
 import { toast } from 'sonner';
 
 export default function TripSummaryPage() {
