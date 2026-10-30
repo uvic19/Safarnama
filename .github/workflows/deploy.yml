@@ -28,9 +28,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'client/package-lock.json'
 
-      # Step 3: Clean, deterministic install of project dependencies
+      # Step 3: Install project dependencies
+      # We use 'npm install' here because Tailwind Oxide, Rolldown, and Sharp contain platform-native bindings
+      # (Linux vs Windows) that require dynamic platform resolution on the Ubuntu runner.
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       # Step 4: Quality Gate - Run behavioral tests.
       # If ANY test fails here, the workflow aborts immediately. Broken code NEVER reaches production!
