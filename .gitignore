@@ -3,7 +3,6 @@
 
 # Whitelist allowed directories and files
 !/.github/
-!/PLAN.md
 !/client/
 !/server/
 !/.gitignore
