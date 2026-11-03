@@ -1,7 +1,7 @@
 import FloatingNav from '../../components/layout/FloatingNav';
 import Footer from '../../components/layout/Footer';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Crown, ArrowLeftRight, WifiOff, Map as MapIcon, Smartphone, Star, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Zap, Crown, ArrowLeftRight, WifiOff, Map as MapIcon, Smartphone, Star, CheckCircle2, Camera, ScanLine } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -13,8 +13,9 @@ export default function LandingPage() {
         <section className="relative pt-32 pb-20 md:pt-40 md:pb-24 px-6 flex flex-col items-center text-center overflow-hidden">
           <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[60vw] h-[60vh] bg-emerald-900/20 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
           
-          <div className="mb-6 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-300 backdrop-blur-md">
-            Safarnama v1.0 is Live
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-xs text-zinc-300 backdrop-blur-md">
+            <Camera className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.5} />
+            <span>New: Snap-to-Expense AI Receipt Scanner</span>
           </div>
 
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.05] max-w-5xl mx-auto">
@@ -23,7 +24,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="font-body text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-            Plan itineraries, track expenses instantly, and settle up with one-tap UPI. The utility-first toolkit for the power traveler.
+            Plan itineraries, snap receipt photos to auto-fill bills, track expenses instantly, and settle up with one-tap UPI. The utility-first toolkit for the power traveler.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 z-10 flex-wrap">
@@ -121,7 +122,90 @@ export default function LandingPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             
-            {/* Feature 1 - Fast Logging */}
+            {/* Feature 0 - Flagship: Snap-to-Expense */}
+            <div className="lg:col-span-2 p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/[0.08] hover:ring-white/[0.14] transition-all">
+              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col md:flex-row gap-8 items-center">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-9 h-9 rounded-xl bg-white/[0.05] ring-1 ring-white/[0.08] flex items-center justify-center text-zinc-200">
+                      <Camera className="w-4 h-4 text-zinc-200" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[11px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-md bg-white/[0.04] text-zinc-400 ring-1 ring-white/[0.06]">
+                      Multimodal AI
+                    </span>
+                  </div>
+                  
+                  <h3 className="font-display text-2xl font-semibold text-white mb-2 tracking-tight">
+                    Snap-to-Expense
+                  </h3>
+                  <p className="font-body text-zinc-400 text-sm leading-relaxed mb-6 font-light">
+                    Toss the receipt on the table and snap a photo. Safarnama’s multimodal vision reads printed checks and handwritten totals in seconds — auto-extracting amounts, categories, and items straight into your split sheet without manual entry.
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    <div className="px-3 py-1.5 rounded-lg bg-white/[0.03] ring-1 ring-white/[0.06] text-xs text-zinc-300 font-mono">
+                      Handwritten Overrides
+                    </div>
+                    <div className="px-3 py-1.5 rounded-lg bg-white/[0.03] ring-1 ring-white/[0.06] text-xs text-zinc-300 font-mono">
+                      Integer Safe
+                    </div>
+                    <div className="px-3 py-1.5 rounded-lg bg-white/[0.03] ring-1 ring-white/[0.06] text-xs text-zinc-300 font-mono">
+                      Offline Drafts
+                    </div>
+                  </div>
+                </div>
+
+                {/* Micro-UI: Clean Receipt Card (Linear/Notion-tier Elevated Minimalism) */}
+                <div className="w-full md:w-64 rounded-2xl bg-[#121214] ring-1 ring-white/[0.08] p-4 flex flex-col gap-3 shadow-lg">
+                  <div className="flex items-center justify-between text-xs pb-2.5 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-2 text-zinc-300">
+                      <ScanLine className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.5} />
+                      <span className="font-mono text-[11px]">receipt_bill.jpg</span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
+                      Extracted
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 py-0.5 text-xs">
+                    <div className="flex justify-between items-center text-zinc-500 font-mono text-[11px]">
+                      <span>Printed Subtotal</span>
+                      <span className="line-through">₹1,142</span>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-300 font-mono text-[11px]">
+                      <span className="text-zinc-400">Handwritten Addition</span>
+                      <span className="text-amber-400/90">+₹1,128</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                    <span className="text-xs text-zinc-400">Total Amount</span>
+                    <span className="font-mono text-base font-medium text-white tracking-tight">₹2,270</span>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
+                    <span className="px-2 py-0.5 rounded bg-white/[0.04] text-zinc-400 font-mono">Food</span>
+                    <span className="font-mono text-amber-400/80">Draft ⚠</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 1 - UPI */}
+            <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
+              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
+                <Smartphone className="w-6 h-6 text-violet-400 mb-4" />
+                <h3 className="font-display text-xl font-semibold text-white mb-2">1-Tap UPI</h3>
+                <p className="font-body text-zinc-400 text-sm leading-relaxed mb-6">
+                  India-first feature. Settle balances directly through GPay, PhonePe, or Paytm with auto-generated deep links.
+                </p>
+                <button className="mt-auto w-full py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium hover:bg-white/15 transition-colors">
+                  Pay via UPI
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 2 - Fast Logging */}
             <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
               <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
                 <Zap className="w-6 h-6 text-yellow-500 mb-4" />
@@ -137,7 +221,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 2 - Smart Settlement */}
+            {/* Feature 3 - Smart Settlement */}
             <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
               <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
                 <ArrowLeftRight className="w-6 h-6 text-blue-400 mb-4" />
@@ -152,20 +236,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 3 - UPI */}
-            <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
-              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
-                <Smartphone className="w-6 h-6 text-violet-400 mb-4" />
-                <h3 className="font-display text-xl font-semibold text-white mb-2">1-Tap UPI</h3>
-                <p className="font-body text-zinc-400 text-sm leading-relaxed mb-6">
-                  India-first feature. Settle balances directly through GPay, PhonePe, or Paytm with auto-generated deep links.
-                </p>
-                <button className="mt-auto w-full py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium hover:bg-white/15 transition-colors">
-                  Pay via UPI
-                </button>
-              </div>
-            </div>
-
             {/* Feature 4 - Offline */}
             <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
               <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
@@ -177,37 +247,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 5 - Democracy & Vaults */}
-            <div className="lg:col-span-2 p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
-              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col md:flex-row gap-6 items-center">
-                <div className="flex-1">
-                  <Star className="w-6 h-6 text-pink-400 mb-4" />
-                  <h3 className="font-display text-xl font-semibold text-white mb-2">Democracy & Vaults</h3>
-                  <p className="font-body text-zinc-400 text-sm leading-relaxed">
-                    Stop arguing in group chats. Let members upvote itinerary suggestions, and store all your shared flight PDFs and Airbnb codes in a centralized Trip Vault.
-                  </p>
-                </div>
-                <div className="w-full md:w-48 h-24 bg-zinc-900 rounded-xl border border-white/5 flex flex-col items-center justify-center p-3">
-                  <div className="text-xs text-zinc-500 mb-2">Vote on Baga Beach</div>
-                  <div className="flex gap-2">
-                     <div className="px-3 py-1 bg-pink-500/10 text-pink-400 rounded text-xs font-medium">👍 4 Votes</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 6 - Map */}
-            <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
-              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
-                <MapIcon className="w-6 h-6 text-emerald-400 mb-4" />
-                <h3 className="font-display text-xl font-semibold text-white mb-2">Map & Itinerary</h3>
-                <p className="font-body text-zinc-400 text-sm leading-relaxed">
-                  Plan stops, calculate distances, and build a day-by-day visual timeline of your adventure.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 7 - Kaptan Mode (Offline Members) */}
+            {/* Feature 5 - Kaptan Mode (Offline Members) */}
             <div className="lg:col-span-2 p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
               <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col md:flex-row gap-6 items-center">
                 <div className="flex-1">
@@ -230,6 +270,36 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Feature 6 - Map */}
+            <div className="p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
+              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col">
+                <MapIcon className="w-6 h-6 text-emerald-400 mb-4" />
+                <h3 className="font-display text-xl font-semibold text-white mb-2">Map & Itinerary</h3>
+                <p className="font-body text-zinc-400 text-sm leading-relaxed">
+                  Plan stops, calculate distances, and build a day-by-day visual timeline of your adventure.
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 7 - Democracy & Vaults */}
+            <div className="lg:col-span-3 p-[1px] rounded-3xl bg-white/[0.03] ring-1 ring-white/5 hover:ring-white/10 transition-all">
+              <div className="h-full rounded-[calc(1.5rem-1px)] bg-[#0C0C0E] p-8 flex flex-col md:flex-row gap-6 items-center">
+                <div className="flex-1">
+                  <Star className="w-6 h-6 text-pink-400 mb-4" />
+                  <h3 className="font-display text-xl font-semibold text-white mb-2">Democracy & Vaults</h3>
+                  <p className="font-body text-zinc-400 text-sm leading-relaxed">
+                    Stop arguing in group chats. Let members upvote itinerary suggestions, and store all your shared flight PDFs and Airbnb codes in a centralized Trip Vault.
+                  </p>
+                </div>
+                <div className="w-full md:w-48 h-24 bg-zinc-900 rounded-xl border border-white/5 flex flex-col items-center justify-center p-3">
+                  <div className="text-xs text-zinc-500 mb-2">Vote on Baga Beach</div>
+                  <div className="flex gap-2">
+                     <div className="px-3 py-1 bg-pink-500/10 text-pink-400 rounded text-xs font-medium">👍 4 Votes</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -247,8 +317,8 @@ export default function LandingPage() {
 
               <div className="p-6 rounded-2xl bg-[#0A0A0C] border border-white/5">
                 <div className="text-4xl font-display font-bold text-white/10 mb-4">02</div>
-                <h3 className="font-display text-lg font-semibold text-white mb-2">Log on the go</h3>
-                <p className="font-body text-zinc-400 text-sm">Add expenses, lock plans, and track your group budget in real-time.</p>
+                <h3 className="font-display text-lg font-semibold text-white mb-2">Snap or Log on the go</h3>
+                <p className="font-body text-zinc-400 text-sm">Snap a photo of the bill or type in seconds. Safarnama pre-fills details and tracks group balances in real-time.</p>
               </div>
 
               <div className="p-6 rounded-2xl bg-[#0A0A0C] border border-white/5">
