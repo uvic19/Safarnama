@@ -2,11 +2,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const VALID_CATEGORIES = ['Food', 'Stay', 'Transport', 'Fuel', 'Entry', 'Shopping', 'Misc'];
 const MODEL_LADDER = [
-  'gemini-2.5-flash',
+  'gemini-3.5-flash',       // Verified stable multimodal workhorse
+  'gemini-3.5-flash-lite',  // Verified fast fallback
+  'gemini-3.8-flash',       // Next-gen flagship
+  'gemini-flash-latest',    // Dynamic latest alias
+  'gemini-flash-lite-latest',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-1.5-flash',
 ];
 
 const RESPONSE_SCHEMA = {
@@ -86,13 +87,7 @@ export const handler = async (event) => {
         body: JSON.stringify(extracted),
       };
     } catch (err) {
-      const status = err?.status || err?.response?.status;
-      const isRetryable = status === 429 || (status >= 500 && status < 600);
-      if (!isRetryable) {
-        console.error(`[scan-receipt] Non-retryable error on ${modelName}:`, err?.message || err);
-        break;
-      }
-      console.warn(`[scan-receipt] ${modelName} failed (${status || 'error'}), falling back in ladder...`);
+      console.warn(`[scan-receipt] ${modelName} failed (${err?.status || err?.message || 'error'}), falling back in ladder...`);
     }
   }
 
