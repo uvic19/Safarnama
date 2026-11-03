@@ -61,6 +61,14 @@ export default defineConfig({
   css: {
     postcss: false,
   },
+  server: {
+    proxy: {
+      '/.netlify/functions': {
+        target: 'http://localhost:8888',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

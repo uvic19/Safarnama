@@ -79,6 +79,34 @@ export const expenseService = {
     return docRef.id;
   },
 
+  /**
+   * Add a draft expense from receipt scanning.
+   * Excluded from balances (status: 'DRAFT', incomplete: true).
+   */
+  async addDraftExpense(tripId, scannedData, { userId, baseCurrency = 'INR' }) {
+    const payload = {
+      amount: Number(scannedData.amount),
+      currency: scannedData.currency || baseCurrency,
+      amount_in_base: Number(scannedData.amount),
+      exchange_rate: 1,
+      category: scannedData.category || 'Misc',
+      description: scannedData.description || '',
+      paid_by_id: '',
+      paid_by_name: '',
+      split_among: [],
+      split_mode: 'EQUAL',
+      split_details: {},
+      payment_mode: '',
+      status: 'DRAFT',
+      incomplete: true,
+      created_by: userId,
+      created_at: serverTimestamp(),
+    };
+    const expensesRef = collection(db, 'trips', tripId, 'expenses');
+    const docRef = await addDoc(expensesRef, payload);
+    return docRef.id;
+  },
+
   /** Update an existing expense in a trip. */
   async updateExpense(tripId, expenseId, expenseData, baseCurrency = 'INR') {
     const payload = {

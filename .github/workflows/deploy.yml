@@ -28,11 +28,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'client/package-lock.json'
 
-      # Step 3: Install project dependencies
+      # Step 3: Install project and function dependencies
       # We use 'npm install' here because Tailwind Oxide, Rolldown, and Sharp contain platform-native bindings
       # (Linux vs Windows) that require dynamic platform resolution on the Ubuntu runner.
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install --prefix ../netlify/functions
 
       # Step 4: Quality Gate - Run behavioral tests.
       # If ANY test fails here, the workflow aborts immediately. Broken code NEVER reaches production!
@@ -50,10 +52,10 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
         run: npm run build
 
-      # Step 6: Ship the compiled static dist/ directly to Netlify
+      # Step 6: Ship the compiled static dist/ and serverless functions directly to Netlify
       - name: Deploy to Netlify
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: npx netlify-cli deploy --prod --dir=dist
+        run: npx netlify-cli deploy --prod --dir=dist --functions=../netlify/functions
 

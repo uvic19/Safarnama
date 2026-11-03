@@ -191,3 +191,9 @@ input[type=number] {
   }
 }
 
+/* Safarnama Receipt Scan Animation */
+@keyframes scan-beam {
+  from { transform: translateY(0); }
+  to   { transform: translateY(72px); }
+}
+

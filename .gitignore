@@ -4,6 +4,7 @@
 # Whitelist allowed directories and files
 !/.github/
 !/client/
+!/netlify/
 !/server/
 !/.gitignore
 !/README.md
@@ -12,5 +13,13 @@
 !/.firebaserc
 
 # Explicitly exclude JVM crash logs and scratch files (belt-and-suspenders)
+node_modules/
 *.log
 payload*.json
+
+# Private defense and planning artifacts (Rule 15 - never track or commit)
+PROJECT_DEFENSE.md
+DEFENSE_LOG.md
+PROJECT_DEEP_DIVE.md
+PLAN.md
+SNAP_TO_EXPENSE.md

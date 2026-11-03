@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import CategoryIcon, { CATEGORIES } from './CategoryIcon';
 import AdvancedSplitSelector from './AdvancedSplitSelector';
+import ScanReceiptButton from './ScanReceiptButton';
 import { expenseService } from '../../services/expenseService';
 import { useAuth } from '../../hooks/useAuth';
 import ConfirmDialog from '../ui/ConfirmDialog';
@@ -51,6 +52,7 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
   const [members, setMembers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [scanPrefilled, setScanPrefilled] = useState(false);
 
   // Fetch members when sheet opens
   useEffect(() => {
@@ -95,7 +97,36 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
   const handleClose = () => {
     setStep(0);
     setForm(initialForm);
+    setScanPrefilled(false);
     onClose();
+  };
+
+  const handleSaveDraft = async () => {
+    if (!form.amount || Number(form.amount) <= 0) {
+      toast.error('Amount is required to save a draft');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await expenseService.addDraftExpense(
+        tripId,
+        {
+          amount: form.amount,
+          category: form.category,
+          description: form.description,
+          currency: form.currency || baseCurrency,
+        },
+        { userId: user.uid, baseCurrency }
+      );
+      toast.success('Draft saved — tap ⚠ on the expense to complete it later');
+      onAdded?.();
+      handleClose();
+    } catch (e) {
+      console.error('[NumpadSheet] Draft save failed:', e);
+      toast.error('Failed to save draft');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Numpad press handler
@@ -251,6 +282,21 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
           {/* ─── Step 0: Amount ─────────────────────────── */}
           {step === 0 && (
             <div className="flex flex-col items-center py-4">
+              {!expenseToEdit && (
+                <ScanReceiptButton
+                  onScanComplete={(extracted) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      amount: extracted.amount ? String(extracted.amount) : prev.amount,
+                      category: extracted.category || prev.category,
+                      description: extracted.description || prev.description,
+                      currency: extracted.currency || prev.currency,
+                    }));
+                    setScanPrefilled(true);
+                  }}
+                />
+              )}
+
               {/* Amount display */}
               <div className="mb-6 text-center w-full max-w-xs">
                 <div className="flex justify-between items-center mb-2 px-2">
@@ -499,10 +545,21 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
                   {submitting ? 'Saving...' : 'Quick Save'}
                 </Button>
               )}
+              {scanPrefilled && step === 0 && !expenseToEdit && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  disabled={submitting || !form.amount || Number(form.amount) <= 0}
+                  className="flex-1 rounded-md font-medium border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+                >
+                  {submitting ? 'Saving...' : 'Save Draft ⚠'}
+                </Button>
+              )}
               <Button
                 onClick={goNext}
                 disabled={!canAdvance()}
-                className={expenseToEdit ? "flex-1 rounded-md font-medium" : "w-full rounded-md font-medium"}
+                className={expenseToEdit || (scanPrefilled && step === 0) ? "flex-1 rounded-md font-medium" : "w-full rounded-md font-medium"}
               >
                 Continue
               </Button>

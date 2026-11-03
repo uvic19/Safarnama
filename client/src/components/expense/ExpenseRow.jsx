@@ -41,7 +41,7 @@ export default function ExpenseRow({ expense, showStatus = false, currentUserId,
 
   const isCreator = expense.created_by === currentUserId || (!expense.created_by && expense.paid_by_id === currentUserId);
   const isKaptan = currentUserId === kaptanId;
-  const canEdit = isKaptan || (isCreator && expense.status !== 'APPROVED');
+  const canEdit = isKaptan || (isCreator && expense.status !== 'APPROVED') || expense.status === 'DRAFT';
   const metaItems = [paid_by_name, payment_mode, timeAgo(created_at)].filter(Boolean);
   
   const displayAmount = amount_in_base || amount;
@@ -61,6 +61,14 @@ export default function ExpenseRow({ expense, showStatus = false, currentUserId,
             <p className="truncate text-sm font-medium leading-tight text-foreground">
               {description || category}
             </p>
+            {(expense.incomplete || expense.status === 'DRAFT') && (
+              <span
+                className="shrink-0 text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-sm ring-1 ring-amber-400/20"
+                title="Draft — tap to complete"
+              >
+                DRAFT ⚠
+              </span>
+            )}
             {showStatus && <ApprovalBadge status={status} className="shrink-0" />}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
