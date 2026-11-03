@@ -11,6 +11,7 @@
 !/firebase.json
 !/firestore.rules
 !/.firebaserc
+!/netlify.toml
 
 # Explicitly exclude JVM crash logs and scratch files (belt-and-suspenders)
 node_modules/

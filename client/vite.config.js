@@ -8,6 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 function netlifyFunctionsDev(env) {
   return {
     name: 'netlify-functions-dev',
+    apply: 'serve',
     configureServer(server) {
       server.middlewares.use('/.netlify/functions/scan-receipt', async (req, res) => {
         if (req.method !== 'POST') {
@@ -22,7 +23,9 @@ function netlifyFunctionsDev(env) {
             if (env.GEMINI_API_KEY) {
               process.env.GEMINI_API_KEY = env.GEMINI_API_KEY;
             }
-            const { handler } = await import('../netlify/functions/scan-receipt.js');
+            const { pathToFileURL } = await import('node:url');
+            const fnPath = path.resolve(__dirname, '../netlify/functions/scan-receipt.js');
+            const { handler } = await import(/* @vite-ignore */ pathToFileURL(fnPath).href);
             const event = {
               httpMethod: req.method,
               headers: req.headers,
@@ -49,7 +52,7 @@ function netlifyFunctionsDev(env) {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
@@ -57,7 +60,7 @@ export default defineConfig(({ mode }) => {
       react(),
       babel({ presets: [reactCompilerPreset()] }),
       tailwindcss(),
-      netlifyFunctionsDev(env),
+      ...(command === 'serve' ? [netlifyFunctionsDev(env)] : []),
       VitePWA({
       registerType: 'prompt',
       includeAssets: ['icons/WhiteOnBlackNoBg.svg', 'icons/*.png'],
