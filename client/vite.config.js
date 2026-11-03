@@ -108,6 +108,9 @@ export default defineConfig(({ mode }) => {
   css: {
     postcss: false,
   },
+  server: {
+    host: true,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -29,6 +29,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 import { useFCM } from './hooks/useFCM';
 import ReloadPrompt from './components/ui/ReloadPrompt';
+import { Toaster } from './components/ui/sonner';
 
 // A simple AuthGuard wrapper
 function AuthGuard({ children }) {
@@ -98,6 +99,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <ReloadPrompt />
+        <Toaster />
         </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>

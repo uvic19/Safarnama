@@ -285,12 +285,22 @@ export default function NumpadSheet({ open, onClose, tripId, tripMode, kaptanId,
               {!expenseToEdit && (
                 <ScanReceiptButton
                   onScanComplete={(extracted) => {
+                    const normCurrency = (c) => {
+                      if (!c) return null;
+                      const s = c.trim().toUpperCase();
+                      if (s === '$' || s === 'USD') return 'USD';
+                      if (s === '₹' || s === 'RS' || s === 'RS.' || s === 'INR') return 'INR';
+                      if (s === '€' || s === 'EUR') return 'EUR';
+                      if (s === '£' || s === 'GBP') return 'GBP';
+                      return s;
+                    };
+                    const matchedCurrency = normCurrency(extracted.currency);
                     setForm((prev) => ({
                       ...prev,
                       amount: extracted.amount ? String(extracted.amount) : prev.amount,
                       category: extracted.category || prev.category,
                       description: extracted.description || prev.description,
-                      currency: extracted.currency || prev.currency,
+                      currency: matchedCurrency || prev.currency || baseCurrency,
                     }));
                     setScanPrefilled(true);
                   }}

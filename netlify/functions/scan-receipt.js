@@ -22,9 +22,12 @@ const RESPONSE_SCHEMA = {
 };
 
 const PROMPT = `Extract expense details from this receipt image.
-Return ONLY values clearly visible on the receipt.
-If a field is absent or illegible, return null — do not guess.
-category must be one of: ${VALID_CATEGORIES.join(', ')}.`;
+- CRITICAL FOR AMOUNT: Inspect the bottom of the bill carefully. If there are handwritten additions, tips, or an updated handwritten final total/sum written below or near the printed total (e.g. 1142 + 1128 = 2270), the FINAL handwritten total represents the actual amount paid and MUST be used as the amount. Otherwise use the printed net total.
+- Do NOT insert decimal points unless an explicit dot '.' is physically drawn or printed. If numbers are written across columns or boxes without a dot, extract the full integer amount as written (e.g. 17 51 is 1751).
+- category must be one of: ${VALID_CATEGORIES.join(', ')}.
+- currency: standard 3-letter currency code (e.g. INR, USD, EUR, GBP) ONLY if an explicit currency symbol or code is clearly visible on the receipt. If not clearly present, return null — do not guess.
+- description: concise summary of purchased items or merchant name.
+- If a field is absent or illegible, return null — do not guess.`;
 
 async function tryModel(modelName, imageBase64, mimeType, genAI) {
   const model = genAI.getGenerativeModel({

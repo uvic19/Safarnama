@@ -33,7 +33,12 @@ export default function ScanReceiptButton({ onScanComplete }) {
   const handleFile = async (file) => {
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    const isImage =
+      !file.type ||
+      file.type.startsWith('image/') ||
+      /\.(jpe?g|png|webp|heic|heif|bmp)$/i.test(file.name || '');
+
+    if (!isImage) {
       toast.error('Please select an image file');
       return;
     }
@@ -56,16 +61,20 @@ export default function ScanReceiptButton({ onScanComplete }) {
       }
 
       const extracted = await res.json();
-      const hasAnyData = extracted.amount || extracted.category || extracted.description;
+      const hasAnyData =
+        extracted &&
+        (extracted.amount != null || Boolean(extracted.category) || Boolean(extracted.description));
 
       if (!hasAnyData) {
         toast.warning('Could not extract details. Please fill in manually.');
         return;
       }
 
-      toast.success('Receipt scanned!');
+      const amountLabel = extracted.amount != null ? ` (${extracted.currency || ''}${extracted.amount})` : '';
+      toast.success(`Receipt scanned!${amountLabel}`);
       onScanComplete(extracted);
-    } catch {
+    } catch (err) {
+      console.error('[ScanReceiptButton] Error:', err);
       toast.error("Couldn't read this receipt clearly. Please add it manually.");
     } finally {
       setIsScanning(false);
@@ -122,7 +131,11 @@ export default function ScanReceiptButton({ onScanComplete }) {
           accept="image/*"
           capture="environment"
           className="hidden"
-          onChange={(e) => handleFile(e.target.files?.[0])}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) handleFile(file);
+          }}
         />
       )}
       <input
@@ -130,7 +143,11 @@ export default function ScanReceiptButton({ onScanComplete }) {
         type="file"
         accept="image/*"
         className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          if (file) handleFile(file);
+        }}
       />
 
       {hasTouchCamera && (
@@ -156,32 +173,60 @@ export default function ScanReceiptButton({ onScanComplete }) {
   );
 }
 
+function fallbackFileReader(file, resolve, reject) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    if (typeof result === 'string') {
+      resolve(result.split(',')[1]);
+    } else {
+      reject(new Error('Failed to read image file'));
+    }
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+}
+
 function toBase64(file) {
   return new Promise((resolve, reject) => {
+    let url;
+    try {
+      url = URL.createObjectURL(file);
+    } catch {
+      return fallbackFileReader(file, resolve, reject);
+    }
+
     const img = new Image();
-    const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const maxDim = 1280;
-      let { width, height } = img;
-      if (width > maxDim || height > maxDim) {
-        if (width > height) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
+      try {
+        const maxDim = 1280;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
         }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas 2D unavailable');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        resolve(dataUrl.split(',')[1]);
+      } catch {
+        fallbackFileReader(file, resolve, reject);
       }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-      resolve(dataUrl.split(',')[1]);
     };
-    img.onerror = reject;
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      fallbackFileReader(file, resolve, reject);
+    };
     img.src = url;
   });
 }
